@@ -18,63 +18,85 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Function to get random questions
-const getRandomQuestions = () => {
-  // Create an array of all question numbers
-  const allQuestions = Array.from({length: 25}, (_, i) => i + 1);
-  
-  // Shuffle the array to get random order
-  const shuffled = allQuestions.sort(() => 0.5 - Math.random());
-  
-  // Return first 5 questions for the treasure hunt
-  return shuffled.slice(0, 5);
-};
+// Sample questions for teams (you should create questions separately in the questions collection)
+const createSampleQuestions = (teamName) => [
+  {
+    title: `${teamName} Innovation Challenge`,
+    video_url: "https://example.com/video1.mp4",
+    location: "Main Auditorium",
+    hint1: "Think about groundbreaking ideas",
+    hint2: "Innovation starts with a problem"
+  },
+  {
+    title: `${teamName} Technology Quest`,
+    video_url: "https://example.com/video2.mp4",
+    location: "Computer Lab",
+    hint1: "The future is digital",
+    hint2: "AI is transforming everything"
+  },
+  {
+    title: `${teamName} Design Challenge`,
+    video_url: "https://example.com/video3.mp4",
+    location: "Design Studio",
+    hint1: "Start with understanding users",
+    hint2: "Empathy is the first step"
+  },
+  {
+    title: `${teamName} Sustainability Task`,
+    video_url: "https://example.com/video4.mp4",
+    location: "Green Campus",
+    hint1: "Think green and sustainable",
+    hint2: "Small changes make big impact"
+  },
+  {
+    title: `${teamName} Final Challenge`,
+    video_url: "https://example.com/video5.mp4",
+    location: "Grand Hall",
+    hint1: "Bring everything together",
+    hint2: "Stories inspire action"
+  }
+];
 
 const sampleTeams = [
   {
     name: "Team Alpha",
     email: "backupacc896578@gmail.com",
     status: "active",
-    currentQuestion: 1,
-    score: 0,
-    questionStarted: false,
-    questionSequence: getRandomQuestions() // Assign random question sequence
+    currentQuestionIndex: 0,
+    score: 200,
+    questionStarted: false
   },
   {
     name: "Team Beta",
     email: "rathodyuvraj1953@gmail.com",
     status: "active",
-    currentQuestion: 1,
-    score: 0,
-    questionStarted: false,
-    questionSequence: getRandomQuestions()
+    currentQuestionIndex: 0,
+    score: 200,
+    questionStarted: false
   },
   {
     name: "Team Gamma",
     email: "team.gamma@example.com",
     status: "active",
-    currentQuestion: 1,
-    score: 0,
-    questionStarted: false,
-    questionSequence: getRandomQuestions()
+    currentQuestionIndex: 0,
+    score: 200,
+    questionStarted: false
   },
   {
     name: "Team Delta",
     email: "team.delta@example.com",
     status: "active",
-    currentQuestion: 1,
-    score: 0,
-    questionStarted: false,
-    questionSequence: getRandomQuestions()
+    currentQuestionIndex: 0,
+    score: 200,
+    questionStarted: false
   },
   {
     name: "Team Epsilon",
     email: "team.epsilon@example.com",
     status: "active",
-    currentQuestion: 1,
-    score: 0,
-    questionStarted: false,
-    questionSequence: getRandomQuestions()
+    currentQuestionIndex: 0,
+    score: 200,
+    questionStarted: false
   }
 ];
 
@@ -91,11 +113,20 @@ async function setupFirebase() {
   try {
     console.log('Setting up Firebase collections...');
 
-    // Add teams
+    // Add teams and create questions for each team
     console.log('Adding teams...');
     for (const team of sampleTeams) {
-      await addDoc(collection(db, 'teams'), team);
-      console.log(`Added team: ${team.name}`);
+      const teamDoc = await addDoc(collection(db, 'teams'), team);
+      console.log(`Added team: ${team.name} with ID: ${teamDoc.id}`);
+      
+      // Create questions for this team
+      const teamQuestions = createSampleQuestions(team.name);
+      await setDoc(doc(db, 'questions', teamDoc.id), {
+        questions: teamQuestions,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      console.log(`Created questions for team: ${team.name}`);
     }
 
     // Add admin users
@@ -113,6 +144,7 @@ async function setupFirebase() {
     }
 
     console.log('Firebase setup completed successfully!');
+    console.log('Teams have been created with their respective questions in the questions collection.');
   } catch (error) {
     console.error('Error setting up Firebase:', error);
   }

@@ -1,272 +1,39 @@
 import { db } from './firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, increment, arrayUnion } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 
-export const QUESTIONS = {
-  1: {
-    title: "Innovation Challenge",
-    description: "Solve this puzzle about TEDx innovation",
-    question: "What is the main theme of TEDxIITGandhinagar 2026?",
-    answer: "Innovation",
-    location: "Main Auditorium",
-    videoUrl: "https://example.com/video1.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  2: {
-    title: "Technology Puzzle",
-    description: "Decode this technological mystery",
-    question: "Which technology is most likely to shape the future of education?",
-    answer: "Artificial Intelligence",
-    location: "Computer Lab",
-    videoUrl: "https://example.com/video2.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  3: {
-    title: "Design Thinking",
-    description: "Apply design thinking principles",
-    question: "What is the first step in the design thinking process?",
-    answer: "Empathize",
-    location: "Design Studio",
-    videoUrl: "https://example.com/video3.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  4: {
-    title: "Sustainability Challenge",
-    description: "Think about environmental solutions",
-    question: "What is the most effective way to reduce carbon footprint in cities?",
-    answer: "Public Transportation",
-    location: "Green Campus",
-    videoUrl: "https://example.com/video4.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  5: {
-    title: "Final Challenge",
-    description: "The ultimate test of your knowledge",
-    question: "What makes TEDx talks so impactful and memorable?",
-    answer: "Storytelling",
-    location: "Grand Hall",
-    videoUrl: "https://example.com/video5.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  6: {
-    title: "Science Discovery",
-    description: "Explore scientific concepts",
-    question: "What is the hardest natural substance on Earth?",
-    answer: "Diamond",
-    location: "Science Lab",
-    videoUrl: "https://example.com/video6.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  7: {
-    title: "History Mystery",
-    description: "Uncover historical facts",
-    question: "In which year was the first TED conference held?",
-    answer: "1984",
-    location: "History Room",
-    videoUrl: "https://example.com/video7.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  8: {
-    title: "Mathematics Challenge",
-    description: "Solve mathematical puzzles",
-    question: "What is the value of π (pi) to two decimal places?",
-    answer: "3.14",
-    location: "Math Center",
-    videoUrl: "https://example.com/video8.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  9: {
-    title: "Literature Quest",
-    description: "Explore literary works",
-    question: "Who wrote 'Romeo and Juliet'?",
-    answer: "William Shakespeare",
-    location: "Library",
-    videoUrl: "https://example.com/video9.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  10: {
-    title: "Geography Explorer",
-    description: "Discover world geography",
-    question: "What is the capital of Japan?",
-    answer: "Tokyo",
-    location: "Geography Room",
-    videoUrl: "https://example.com/video10.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  11: {
-    title: "Art Appreciation",
-    description: "Understand artistic concepts",
-    question: "Who painted the Mona Lisa?",
-    answer: "Leonardo da Vinci",
-    location: "Art Gallery",
-    videoUrl: "https://example.com/video11.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  12: {
-    title: "Music Theory",
-    description: "Learn musical concepts",
-    question: "How many notes are in a standard octave?",
-    answer: "8",
-    location: "Music Room",
-    videoUrl: "https://example.com/video12.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  13: {
-    title: "Physics Principles",
-    description: "Understand physical laws",
-    question: "What is the SI unit of force?",
-    answer: "Newton",
-    location: "Physics Lab",
-    videoUrl: "https://example.com/video13.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  14: {
-    title: "Chemistry Elements",
-    description: "Explore chemical elements",
-    question: "What is the chemical symbol for gold?",
-    answer: "Au",
-    location: "Chemistry Lab",
-    videoUrl: "https://example.com/video14.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  15: {
-    title: "Biology Basics",
-    description: "Learn biological concepts",
-    question: "What is the powerhouse of the cell?",
-    answer: "Mitochondria",
-    location: "Biology Lab",
-    videoUrl: "https://example.com/video15.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  16: {
-    title: "Computer Science",
-    description: "Understand programming concepts",
-    question: "What does HTML stand for?",
-    answer: "HyperText Markup Language",
-    location: "Computer Lab",
-    videoUrl: "https://example.com/video16.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  17: {
-    title: "Economics Insight",
-    description: "Learn economic principles",
-    question: "What is the study of how people make choices called?",
-    answer: "Economics",
-    location: "Economics Room",
-    videoUrl: "https://example.com/video17.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  18: {
-    title: "Psychology Basics",
-    description: "Understand human behavior",
-    question: "Who is considered the father of psychology?",
-    answer: "Wilhelm Wundt",
-    location: "Psychology Lab",
-    videoUrl: "https://example.com/video18.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  19: {
-    title: "Philosophy Quest",
-    description: "Explore philosophical ideas",
-    question: "Who said 'I think, therefore I am'?",
-    answer: "René Descartes",
-    location: "Philosophy Room",
-    videoUrl: "https://example.com/video19.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  20: {
-    title: "Astronomy Discovery",
-    description: "Explore the universe",
-    question: "What is the closest planet to the Sun?",
-    answer: "Mercury",
-    location: "Observatory",
-    videoUrl: "https://example.com/video20.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  21: {
-    title: "Environmental Science",
-    description: "Learn about the environment",
-    question: "What gas do plants absorb from the atmosphere?",
-    answer: "Carbon Dioxide",
-    location: "Greenhouse",
-    videoUrl: "https://example.com/video21.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  22: {
-    title: "Engineering Principles",
-    description: "Understand engineering concepts",
-    question: "What is the study of motion called?",
-    answer: "Kinematics",
-    location: "Engineering Lab",
-    videoUrl: "https://example.com/video22.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  23: {
-    title: "Medicine Basics",
-    description: "Learn medical concepts",
-    question: "What is the largest organ in the human body?",
-    answer: "Skin",
-    location: "Medical Center",
-    videoUrl: "https://example.com/video23.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  24: {
-    title: "Architecture Design",
-    description: "Understand architectural concepts",
-    question: "What is the study of building design called?",
-    answer: "Architecture",
-    location: "Design Studio",
-    videoUrl: "https://example.com/video24.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
-  },
-  25: {
-    title: "Final Masterpiece",
-    description: "The ultimate challenge",
-    question: "What is the purpose of TEDx events?",
-    answer: "Share Ideas Worth Spreading",
-    location: "Grand Hall",
-    videoUrl: "https://example.com/video25.mp4",
-    hint1: "It starts with understanding and connecting with your users' feelings.",
-    hint2: "It starts with understanding and connecting with your users' feelings.",
+// Fetch questions from database based on team ID
+export const getTeamQuestions = async (teamId) => {
+  try {
+    const questionsRef = doc(db, 'questions', teamId);
+    const questionsSnap = await getDoc(questionsRef);
+    
+    if (questionsSnap.exists()) {
+      const data = questionsSnap.data();
+      return data.questions || []; // Returns array of 5 questions
+    } else {
+      throw new Error(`No questions found for team ID: ${teamId}`);
+    }
+  } catch (error) {
+    console.error('Error fetching team questions:', error);
+    throw error;
   }
 };
 
-export const getCurrentQuestion = async (questionNumber) => {
-  return QUESTIONS[questionNumber] || null;
+export const getCurrentQuestion = async (teamId, questionIndex) => {
+  try {
+    const questions = await getTeamQuestions(teamId);
+    return questions[questionIndex] || null;
+  } catch (error) {
+    console.error('Error getting current question:', error);
+    return null;
+  }
 };
 
 export const getRandomQuestions = () => {
-  // Create an array of all question numbers
-  const allQuestions = Array.from({length: 25}, (_, i) => i + 1);
-  
-  // Shuffle the array to get random order
-  const shuffled = allQuestions.sort(() => 0.5 - Math.random());
-  
-  // Return first 5 questions for the treasure hunt
-  return shuffled.slice(0, 5);
+  // DEPRECATED: This function is no longer used
+  // Questions are now pre-assigned in the database per team
+  console.warn('getRandomQuestions is deprecated - questions should be pre-assigned in database');
+  return [];
 };
 
 // Auto-initialize team score to 200 once
@@ -314,7 +81,7 @@ export const getTeamData = async (email) => {
       return { id: teamDoc.id, ...data, score };
     }
     
-    console.log(`No team found for email: ${email}`);
+    // console.log(`No team found for email: ${email}`);
     return null;
   } catch (error) {
     console.error('Error getting team data:', error);
@@ -362,18 +129,13 @@ export const createTeamWithMembers = async (teamName, memberEmails, leaderEmail 
     // Use leader email as primary email, or first email if no leader specified
     const primaryEmail = leaderEmail || memberEmails[0];
     
-    // Get 5 random questions for this team
-    const assignedQuestions = getRandomQuestions();
-    
     const teamData = {
       name: teamName,
       email: primaryEmail, // Keep for backward compatibility
       memberEmails: memberEmails, // Array of all member emails
       leaderEmail: primaryEmail,
-      assignedQuestions: assignedQuestions, // Array of 5 question numbers
       score: 200,
-      currentQuestion: assignedQuestions[0],
-      currentQuestionIndex: 0, // Index in assignedQuestions array (0-4)
+      currentQuestionIndex: 0, // Index in questions array (0-4)
       questionStarted: false,
       answerStarted: false,
       questionStatuses: {}, // Initialize empty question statuses object
@@ -442,7 +204,6 @@ export const addMemberToTeam = async (teamId, newMemberEmail) => {
 };
 
 // Upsert a scanned team document keyed by admin+team to avoid duplicates
-// Upsert a scanned team document keyed by admin+team to avoid duplicates
 export const saveScannedTeam = async (adminEmail, teamData) => {
   try {
     // Validate required fields and provide fallbacks
@@ -451,11 +212,11 @@ export const saveScannedTeam = async (adminEmail, teamData) => {
       name: teamData.name || teamData.teamName || `Team ${teamData.id || 'Unknown'}`,
       email: teamData.email || '',
       memberEmails: teamData.memberEmails || [teamData.email || ''],
-      currentQuestion: teamData.currentQuestion || teamData.assignedQuestions[0],
+      currentQuestionIndex: teamData.currentQuestionIndex || 0,
       score: typeof teamData.score === 'number' ? teamData.score : 200
     };
     
-    console.log('Saving scanned team with validated data:', validatedTeamData);
+    // console.log('Saving scanned team with validated data:', validatedTeamData);
     
     const id = `${adminEmail}_${validatedTeamData.id}`;
     const scannedDocRef = doc(db, 'scannedTeams', id);
@@ -469,7 +230,7 @@ export const saveScannedTeam = async (adminEmail, teamData) => {
         teamEmail: validatedTeamData.email,
         memberEmails: validatedTeamData.memberEmails,
         scannedAt: serverTimestamp(),
-        currentQuestion: validatedTeamData.currentQuestion,
+        currentQuestionIndex: validatedTeamData.currentQuestionIndex,
         status: 'in_progress',
         updatedAt: serverTimestamp()
       },
@@ -517,20 +278,18 @@ export const getScannedTeams = async (adminEmail) => {
 };
 
 // Candidate starts question: also starts shared 2-minute window
-export const startTeamQuestion = async (teamId, questionNumber) => {
+export const startTeamQuestion = async (teamId, questionIndex) => {
   try {
     const teamRef = doc(db, 'teams', teamId);
     const teamSnap = await getDoc(teamRef);
     if (!teamSnap.exists()) throw new Error('Team not found');
     
     const data = teamSnap.data();
-    const assignedQuestions = data.assignedQuestions || [];
     const currentQuestionIndex = data.currentQuestionIndex || 0;
     
-    // Verify the question number matches the current assigned question
-    const expectedQuestion = assignedQuestions[currentQuestionIndex];
-    if (questionNumber !== expectedQuestion) {
-      console.warn(`Question mismatch: expected ${expectedQuestion}, got ${questionNumber}`);
+    // Verify the question index matches the current question index
+    if (questionIndex !== currentQuestionIndex) {
+      console.warn(`Question index mismatch: expected ${currentQuestionIndex}, got ${questionIndex}`);
     }
     
     await updateDoc(teamRef, {
@@ -538,7 +297,7 @@ export const startTeamQuestion = async (teamId, questionNumber) => {
       questionStartTime: serverTimestamp(),
       answerStarted: true,
       answerStartTime: serverTimestamp(),
-      currentQuestion: questionNumber
+      currentQuestionIndex: questionIndex
     });
   } catch (error) {
     console.error('Error starting team question:', error);
@@ -558,16 +317,18 @@ function computeTimeBasedPoints(elapsedSeconds) {
 }
 
 // FIXED: Submit team answer with proper score calculation and immediate next question update
-export const submitTeamAnswer = async (teamId, questionNumber, isCorrect, answer = '') => {
+export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer = '') => {
   try {
     const teamRef = doc(db, 'teams', teamId);
     const teamSnap = await getDoc(teamRef);
     if (!teamSnap.exists()) throw new Error('Team not found');
 
     const data = teamSnap.data();
-    const assignedQuestions = data.assignedQuestions || [];
     const currentQuestionIndex = data.currentQuestionIndex || 0;
     const currentScore = data.score || 200;
+    
+    // Fetch questions to get total count
+    const questions = await getTeamQuestions(teamId);
     
     const startTs = data.answerStartTime?.toDate?.() || data.questionStartTime?.toDate?.();
     const elapsedSeconds = startTs ? Math.floor((Date.now() - startTs.getTime()) / 1000) : 9999;
@@ -584,12 +345,11 @@ export const submitTeamAnswer = async (teamId, questionNumber, isCorrect, answer
     const newScore = currentScore + pointsEarned;
 
     const nextQuestionIndex = currentQuestionIndex + 1;
-    const nextQuestion = assignedQuestions[nextQuestionIndex] || null;
-    const isGameCompleted = nextQuestionIndex >= assignedQuestions.length;
+    const isGameCompleted = nextQuestionIndex >= questions.length;
 
     // Update question status tracking
     const questionStatuses = data.questionStatuses || {};
-    questionStatuses[questionNumber] = {
+    questionStatuses[questionIndex] = {
       status: isCorrect ? 'correct' : 'incorrect',
       answer: answer,
       pointsEarned: pointsEarned,
@@ -617,14 +377,6 @@ export const submitTeamAnswer = async (teamId, questionNumber, isCorrect, answer
       updateData.gameCompletedAt = serverTimestamp();
     }
 
-    // Always update currentQuestion for immediate UI update
-    if (nextQuestion) {
-      updateData.currentQuestion = nextQuestion;
-    } else if (isGameCompleted) {
-      // Clear current question when game is completed
-      updateData.currentQuestion = null;
-    }
-
     await updateDoc(teamRef, updateData);
 
     // IMPORTANT: Remove the team from scanned teams so they need to be scanned again for the next question
@@ -639,7 +391,7 @@ export const submitTeamAnswer = async (teamId, questionNumber, isCorrect, answer
         
         if (deletePromises.length > 0) {
           await Promise.all(deletePromises);
-          console.log(`Removed ${deletePromises.length} scanned entries for team ${teamId}`);
+          // console.log(`Removed ${deletePromises.length} scanned entries for team ${teamId}`);
         }
       } catch (error) {
         console.error('Error removing scanned teams:', error);
@@ -660,28 +412,28 @@ export const submitTeamAnswer = async (teamId, questionNumber, isCorrect, answer
 };
 
 // FIXED: Skip team question with proper score calculation and immediate next question update
-// FIXED: Skip team question with proper score calculation and immediate next question update
-export const skipTeamQuestion = async (teamId, questionNumber) => {
+export const skipTeamQuestion = async (teamId, questionIndex) => {
   try {
     const teamRef = doc(db, 'teams', teamId);
     const teamSnap = await getDoc(teamRef);
     if (!teamSnap.exists()) throw new Error('Team not found');
     const data = teamSnap.data();
 
-    const assignedQuestions = data.assignedQuestions || [];
     const currentQuestionIndex = data.currentQuestionIndex || 0;
     const currentScore = data.score || 200;
     
+    // Fetch questions to get total count
+    const questions = await getTeamQuestions(teamId);
+    
     const nextQuestionIndex = currentQuestionIndex + 1;
-    const nextQuestion = assignedQuestions[nextQuestionIndex] || null;
-    const isGameCompleted = nextQuestionIndex >= assignedQuestions.length;
+    const isGameCompleted = nextQuestionIndex >= questions.length;
 
     // Calculate new score (subtract 100 for skipping)
     const newScore = currentScore - 100;
 
     // Update question status tracking
     const questionStatuses = data.questionStatuses || {};
-    questionStatuses[questionNumber] = {
+    questionStatuses[questionIndex] = {
       status: 'skipped',
       answer: '',
       pointsEarned: -100,
@@ -706,14 +458,6 @@ export const skipTeamQuestion = async (teamId, questionNumber) => {
     if (isGameCompleted) {
       updateData.gameCompleted = true;
       updateData.gameCompletedAt = serverTimestamp();
-    }
-
-    // Always update currentQuestion for immediate UI update
-    if (nextQuestion) {
-      updateData.currentQuestion = nextQuestion;
-    } else if (isGameCompleted) {
-      // Clear current question when game is completed
-      updateData.currentQuestion = null;
     }
 
     await updateDoc(teamRef, updateData);
@@ -866,31 +610,28 @@ export const getTeamProgress = async (teamId) => {
     
     const teamData = teamSnap.data();
     const questionStatuses = teamData.questionStatuses || {};
-    const assignedQuestions = teamData.assignedQuestions || [];
     const currentQuestionIndex = teamData.currentQuestionIndex || 0;
     
-    // If team doesn't have assigned questions (old teams), assign them now
-    if (assignedQuestions.length === 0) {
-      const randomQuestions = getRandomQuestions();
-      await updateDoc(teamRef, { 
-        assignedQuestions: randomQuestions,
-        currentQuestionIndex: 0 
-      });
-      assignedQuestions.push(...randomQuestions);
+    // Fetch questions from database
+    const questions = await getTeamQuestions(teamId);
+    
+    if (questions.length !== 5) {
+      throw new Error(`Expected 5 questions for team ${teamId}, but found ${questions.length}`);
     }
     
-    const totalQuestions = assignedQuestions.length; // Should be 5
+    const totalQuestions = questions.length; // Should be 5
     const progress = [];
     
-    // Create progress for assigned questions only
-    assignedQuestions.forEach((questionNumber, index) => {
-      const questionData = QUESTIONS[questionNumber];
-      const status = questionStatuses[questionNumber];
+    // Create progress for team questions
+    questions.forEach((question, index) => {
+      const status = questionStatuses[index]; // Use index as key since we don't have question numbers
       
       progress.push({
-        questionNumber: questionNumber,
-        questionIndex: index + 1, // Display as 1-5 instead of actual question numbers
-        title: questionData?.title || `Question ${questionNumber}`,
+        questionIndex: index + 1, // Display as 1-5
+        video_url: question.video_url || '',
+        location: question.location || '',
+        hint1: question.hint1 || '',
+        hint2: question.hint2 || '',
         status: status ? status.status : (index < currentQuestionIndex ? 'not-attempted' : 'upcoming'),
         pointsEarned: status?.pointsEarned || 0,
         timeElapsed: status?.timeElapsed || 0,
@@ -902,8 +643,8 @@ export const getTeamProgress = async (teamId) => {
     
     return {
       currentQuestionIndex,
-      currentQuestion: assignedQuestions[currentQuestionIndex] || assignedQuestions[0],
-      assignedQuestions,
+      currentQuestion: questions[currentQuestionIndex] || questions[0],
+      questions,
       totalQuestions,
       score: teamData.score || 200,
       progress
@@ -937,33 +678,21 @@ export const debugTeamStructure = async (email) => {
   try {
     const teamsRef = collection(db, 'teams');
     
-    // Get all teams to see the structure
-    const allTeamsSnapshot = await getDocs(teamsRef);
-    console.log('=== ALL TEAMS STRUCTURE DEBUG ===');
     
-    allTeamsSnapshot.forEach((doc) => {
-      const data = doc.data();
-      console.log(`Team ID: ${doc.id}`);
-      console.log('Team data:', data);
-      console.log('Fields present:', Object.keys(data));
-      console.log('Name field:', data.name);
-      console.log('TeamName field:', data.teamName);
-      console.log('Email field:', data.email);
-      console.log('MemberEmails field:', data.memberEmails);
-      console.log('---');
-    });
+    
+    
     
     // Specific search for the email
     const qEmail = query(teamsRef, where('email', '==', email));
     const emailSnapshot = await getDocs(qEmail);
     
-    console.log(`=== SEARCH FOR EMAIL: ${email} ===`);
+    // console.log(`=== SEARCH FOR EMAIL: ${email} ===`);
     if (!emailSnapshot.empty) {
       emailSnapshot.forEach((doc) => {
-        console.log('Found team by email:', doc.id, doc.data());
+        // console.log('Found team by email:', doc.id, doc.data());
       });
     } else {
-      console.log('No team found with email:', email);
+      // console.log('No team found with email:', email);
     }
     
   } catch (error) {
@@ -973,3 +702,76 @@ export const debugTeamStructure = async (email) => {
 
 // Call this function in your Admin component after scanning fails
 // debugTeamStructure('just.backup.op@gmail.com');
+
+// Helper function to create questions document for a team
+export const createTeamQuestions = async (teamId, questions) => {
+  try {
+    if (!Array.isArray(questions) || questions.length !== 5) {
+      throw new Error('Questions must be an array of exactly 5 questions');
+    }
+    
+    // Validate each question has required fields
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+      if (!question.video_url || !question.location || !question.hint1 || !question.hint2) {
+        throw new Error(`Question ${i + 1} is missing required fields: video_url, location, hint1, hint2`);
+      }
+    }
+    
+    const questionsRef = doc(db, 'questions', teamId);
+    await setDoc(questionsRef, {
+      questions: questions,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    
+    // console.log(`Questions created for team ${teamId}`);
+    return true;
+  } catch (error) {
+    console.error('Error creating team questions:', error);
+    throw error;
+  }
+};
+
+// Example function to create sample questions for testing
+export const createSampleQuestions = (teamId) => {
+  const sampleQuestions = [
+    {
+      title: "Innovation Challenge",
+      video_url: "https://example.com/video1.mp4",
+      location: "Main Auditorium",
+      hint1: "This is the first hint for innovation challenge",
+      hint2: "This is the second hint for innovation challenge"
+    },
+    {
+      title: "Technology Quest",
+      video_url: "https://example.com/video2.mp4", 
+      location: "Computer Lab",
+      hint1: "Technology shapes our future",
+      hint2: "Think about artificial intelligence"
+    },
+    {
+      title: "Design Thinking",
+      video_url: "https://example.com/video3.mp4",
+      location: "Design Studio", 
+      hint1: "Start with empathy",
+      hint2: "Understand user needs first"
+    },
+    {
+      title: "Sustainability Challenge",
+      video_url: "https://example.com/video4.mp4",
+      location: "Green Campus",
+      hint1: "Think about the environment",
+      hint2: "Reduce, reuse, recycle"
+    },
+    {
+      title: "Final Challenge",
+      video_url: "https://example.com/video5.mp4",
+      location: "Grand Hall",
+      hint1: "Combine all your learnings",
+      hint2: "The power of storytelling"
+    }
+  ];
+  
+  return createTeamQuestions(teamId, sampleQuestions);
+};

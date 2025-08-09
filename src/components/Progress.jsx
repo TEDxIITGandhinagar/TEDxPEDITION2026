@@ -162,9 +162,9 @@ const Progress = ({ teamId }) => {
 
       {/* Questions Grid */}
       <div className="grid grid-cols-5 gap-3">
-        {progressData?.progress.map((question) => (
+        {progressData?.progress.map((question, index) => (
           <div
-            key={question.questionNumber}
+            key={index}
             className={`
               relative p-3 rounded-lg border-2 transition-all duration-200 hover:shadow-md
               ${getStatusColor(question.status, question.isCurrent)}

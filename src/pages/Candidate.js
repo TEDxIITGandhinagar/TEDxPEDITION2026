@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -37,23 +37,19 @@ const Candidate = () => {
       if (teamData) {
         setTeam(teamData);
         
-        // Load current question from assigned questions
-        const assignedQuestions = teamData.assignedQuestions || [];
+        // Load current question using team ID and current question index
         const currentQuestionIndex = teamData.currentQuestionIndex || 0;
-        const currentQuestionNumber = assignedQuestions[currentQuestionIndex];
         
-        if (currentQuestionNumber) {
-          await loadCurrentQuestion(currentQuestionNumber);
-        }
+        await loadCurrentQuestion(teamData.id, currentQuestionIndex);
         
         // Check question state
         if (teamData.questionStarted) {
           setQuestionStarted(true);
         }
         
-        // Count hints used for current question
+        // Count hints used for current question (now using question index)
         const hintsArray = teamData.hintsUsed || [];
-        const currentHints = hintsArray.filter(hintQ => hintQ === currentQuestionNumber).length;
+        const currentHints = hintsArray.filter(hintQ => hintQ === currentQuestionIndex).length;
         setHintsUsed(currentHints);
         setRevealedHints([]);
       } else {
@@ -67,11 +63,11 @@ const Candidate = () => {
     }
   }, [user.email]);
 
-  const loadCurrentQuestion = async (questionNumber) => {
+  const loadCurrentQuestion = async (teamId, questionIndex) => {
     try {
-      const question = await getCurrentQuestion(questionNumber);
+      const question = await getCurrentQuestion(teamId, questionIndex);
       setCurrentQuestion(question);
-      console.log('Loaded question:', questionNumber, question);
+      // console.log('Loaded question:', questionIndex, question);
     } catch (error) {
       console.error('Error loading question:', error);
       setError('Failed to load question.');
@@ -87,10 +83,10 @@ const Candidate = () => {
         email: team.email 
       };
       
-      console.log('Generating QR code with data:', qrData);
+      // console.log('Generating QR code with data:', qrData);
       
       const qrString = JSON.stringify(qrData);
-      console.log('QR string:', qrString);
+      // console.log('QR string:', qrString);
       
       const qrDataUrl = await QRCode.toDataURL(qrString, { 
         width: 256, 
@@ -114,20 +110,18 @@ const Candidate = () => {
   useEffect(() => {
     if (team) {
       const unsubTeam = listenToTeam(team.id, async (updatedTeam) => {
-        console.log('Team updated:', updatedTeam);
+        // console.log('Team updated:', updatedTeam);
         setTeam(updatedTeam);
         
-        // Load current question from assigned questions
-        const assignedQuestions = updatedTeam.assignedQuestions || [];
+        // Load current question using team ID and current question index
         const currentQuestionIndex = updatedTeam.currentQuestionIndex || 0;
-        const currentQuestionNumber = assignedQuestions[currentQuestionIndex];
         
-        console.log('Current question number:', currentQuestionNumber, 'from index:', currentQuestionIndex);
+        // console.log('Current question index:', currentQuestionIndex);
         
         // Always load the current question when team updates
-        if (currentQuestionNumber && !updatedTeam.gameCompleted) {
-          await loadCurrentQuestion(currentQuestionNumber);
-        } else if (updatedTeam.gameCompleted) {
+        if (!updatedTeam.gameCompleted) {
+          await loadCurrentQuestion(updatedTeam.id, currentQuestionIndex);
+        } else {
           // Clear current question when game is completed
           setCurrentQuestion(null);
         }
@@ -139,10 +133,9 @@ const Candidate = () => {
           setQuestionStarted(false);
         }
         
-        // Update hints used for current question
-        // Update hints used for current question
+        // Update hints used for current question (now using question index)
         const hintsUsedObj = updatedTeam.hintsUsed || {};
-        const currentHints = hintsUsedObj[currentQuestionNumber] || 0;
+        const currentHints = hintsUsedObj[currentQuestionIndex] || 0;
         setHintsUsed(currentHints);
       });
 
@@ -155,7 +148,7 @@ const Candidate = () => {
         unsubScanned && unsubScanned();
       };
     }
-  }, [team?.id]);
+  }, [team?.id, team]);
 
   useEffect(() => {
     if (team) {
@@ -166,11 +159,9 @@ const Candidate = () => {
   const handleStartQuestion = async () => {
     if (!team) return;
     try {
-      const assignedQuestions = team.assignedQuestions || [];
       const currentQuestionIndex = team.currentQuestionIndex || 0;
-      const currentQuestionNumber = assignedQuestions[currentQuestionIndex];
       
-      await startTeamQuestion(team.id, currentQuestionNumber || 1);
+      await startTeamQuestion(team.id, currentQuestionIndex);
       // Question state will sync via Firestore
     } catch (e) {
       console.error('Error starting question:', e);
@@ -182,11 +173,9 @@ const Candidate = () => {
     
     if (window.confirm('Are you sure you want to skip this question? You will lose 50 points.')) {
       try {
-        const assignedQuestions = team.assignedQuestions || [];
         const currentQuestionIndex = team.currentQuestionIndex || 0;
-        const currentQuestionNumber = assignedQuestions[currentQuestionIndex];
         
-        await skipTeamQuestion(team.id, currentQuestionNumber);
+        await skipTeamQuestion(team.id, currentQuestionIndex);
         // Team state will update via Firestore listener
       } catch (error) {
         console.error('Error skipping question:', error);
@@ -198,13 +187,11 @@ const Candidate = () => {
   const handleGiveHint = async () => {
     if (!team || !currentQuestion) return;
     
-    const assignedQuestions = team.assignedQuestions || [];
     const currentQuestionIndex = team.currentQuestionIndex || 0;
-    const currentQuestionNumber = assignedQuestions[currentQuestionIndex];
     
-    // Get current hints used for this question
+    // Get current hints used for this question (now using question index)
     const hintsUsedObj = team.hintsUsed || {};
-    const questionHints = hintsUsedObj[currentQuestionNumber] || 0;
+    const questionHints = hintsUsedObj[currentQuestionIndex] || 0;
     
     if (questionHints >= 2) {
       setError('Maximum hints already used for this question');
@@ -216,7 +203,7 @@ const Candidate = () => {
     
     if (window.confirm(`Are you sure you want a hint? You will lose ${pointsToDeduct} points.`)) {
       try {
-        await giveTeamHint(team.id, currentQuestionNumber);
+        await giveTeamHint(team.id, currentQuestionIndex);
         setRevealedHints(prev => [...prev, currentQuestion[hintKey]]);
       } catch (error) {
         console.error('Error getting hint:', error);
@@ -264,7 +251,7 @@ const Candidate = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2 md:space-x-4">
               <h1 className="text-lg md:text-2xl font-bold"><img src={logo} alt="TEDxIITGandhinagar" className="h-8" /></h1>
-              <span className="bg-red-600 px-2 py-1 rounded-full text-xs md:text-sm font-semibold">Treasure Hunt</span>
+              <span className="bg-red-600 px-2 py-1 rounded-full text-xs md:text-sm font-semibold">TEDxPEDITION</span>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
               {team && <span className="text-xs md:text-sm font-semibold hidden sm:block">Team {team.name} </span>}
@@ -285,9 +272,9 @@ const Candidate = () => {
                 <div className="mb-6">
                   <i className="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
                   <h2 className="text-3xl font-bold text-gray-900 mb-4">Congratulations, Team {team.name}!</h2>
-                  <p className="text-xl text-gray-600 mb-4">You have completed all 5 questions in the treasure hunt!</p>
+                  <p className="text-xl text-gray-600 mb-4">You have completed all 5 questions in the TEDxPEDITION!</p>
                   <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
-                    <p className="text-sm">Thank you for participating in the TEDx IIT Gandhinagar orientation treasure hunt!</p>
+                    <p className="text-sm">Thank you for participating in the TEDx IIT Gandhinagar orientation TEDxPEDITION!</p>
                   </div>
                 </div>
                 
@@ -389,7 +376,7 @@ const Candidate = () => {
                       <h4 className="font-semibold text-blue-900 mb-2 text-sm md:text-base">Instructions:</h4>
                       <ul className="text-blue-800 text-xs md:text-sm space-y-1">
                         <li>• Go to the location shown above</li>
-                        <li>• Show your QR code to the admin</li>
+                        <li>• Show your QR code to the senior team member</li>
                         <li>• Start the question when ready</li>
                         <li>• Use hints if needed (1st hint: -25 pts, 2nd hint: -50 pts)</li>
                         <li>• Tell your answer to the admin or skip if stuck (-50 pts)</li>

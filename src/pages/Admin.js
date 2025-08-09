@@ -25,7 +25,6 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showQRScanner, setShowQRScanner] = useState(false);
-  const [scannedQR, setScannedQR] = useState('');
   const [scanner, setScanner] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [teamAnswer, setTeamAnswer] = useState('');
@@ -45,7 +44,7 @@ const Admin = () => {
     } else if (!showQRScanner && scanner) {
       stopScanner();
     }
-  }, [showQRScanner]);
+  }, [showQRScanner, scanner]);
 
   useEffect(() => {
     if (selectedTeam) {
@@ -116,24 +115,23 @@ const Admin = () => {
   };
 
   const onScanSuccess = async (decodedText) => {
-    setScannedQR(decodedText);
     setShowQRScanner(false);
     
-    console.log('Scanned QR code:', decodedText);
+    // console.log('Scanned QR code:', decodedText);
     
     try {
       const teamData = JSON.parse(decodedText);
-      console.log('Parsed team data:', teamData);
+      // console.log('Parsed team data:', teamData);
       
       if (!teamData.email) {
         setError('Invalid QR code format - missing email field');
         return;
       }
       
-      console.log('Looking up team for email:', teamData.email);
+      // console.log('Looking up team for email:', teamData.email);
       
       const fullTeamData = await getTeamData(teamData.email);
-      console.log('Found team data:', fullTeamData);
+      // console.log('Found team data:', fullTeamData);
       
       if (fullTeamData) {
         // Validate and provide fallback values for required fields
@@ -141,18 +139,18 @@ const Admin = () => {
           ...fullTeamData,
           name: fullTeamData.name || fullTeamData.teamName || `Team ${fullTeamData.id}`,
           email: fullTeamData.email || teamData.email,
-          currentQuestion: fullTeamData.currentQuestion || fullTeamData.assignedQuestions[0],
+          currentQuestionIndex: fullTeamData.currentQuestionIndex || 0,
           score: fullTeamData.score || 200
         };
         
-        console.log('Team data to save:', teamToSave);
+        // console.log('Team data to save:', teamToSave);
         
         await saveScannedTeam(user.email, teamToSave);
         
         const newTeam = {
           id: teamToSave.id,
           name: teamToSave.name,
-          currentQuestion: teamToSave.currentQuestion,
+          currentQuestionIndex: teamToSave.currentQuestionIndex,
           status: 'active',
           questionStarted: teamToSave.questionStarted || false,
           email: teamToSave.email
@@ -174,7 +172,7 @@ const Admin = () => {
   };
 
   const onScanFailure = (error) => {
-    console.log('QR scan failed:', error);
+    // console.log('QR scan failed:', error);
   };
 
   const loadScannedTeams = async () => {
@@ -194,9 +192,9 @@ const Admin = () => {
     setSelectedTeam(team);
     setTeamAnswer('');
     setShowCorrectAnswer(false);
-    if (team.currentQuestion) {
+    if (team.id && typeof team.currentQuestionIndex === 'number') {
       try {
-        const question = await getCurrentQuestion(team.currentQuestion);
+        const question = await getCurrentQuestion(team.id, team.currentQuestionIndex);
         setCurrentQuestion(question);
       } catch (error) {
         console.error('Error loading question:', error);
@@ -222,7 +220,7 @@ const Admin = () => {
   const handleSubmitAnswer = async (isCorrect) => {
     if (!selectedTeam) return;
     try {
-      await submitTeamAnswer(selectedTeam.id, selectedTeam.currentQuestion, isCorrect, teamAnswer);
+      await submitTeamAnswer(selectedTeam.id, selectedTeam.currentQuestionIndex, isCorrect, teamAnswer);
       await finalizeAndRemove(selectedTeam.id);
     } catch (error) {
       console.error('Error submitting answer:', error);
@@ -233,7 +231,7 @@ const Admin = () => {
   const handleSkipQuestion = async () => {
     if (!selectedTeam) return;
     try {
-      await skipTeamQuestion(selectedTeam.id, selectedTeam.currentQuestion);
+      await skipTeamQuestion(selectedTeam.id, selectedTeam.currentQuestionIndex);
       await finalizeAndRemove(selectedTeam.id);
     } catch (error) {
       console.error('Error skipping question:', error);
@@ -244,7 +242,7 @@ const Admin = () => {
   const handleGiveHint = async () => {
     if (!selectedTeam) return;
     try {
-      await giveTeamHint(selectedTeam.id, selectedTeam.currentQuestion);
+      await giveTeamHint(selectedTeam.id, selectedTeam.currentQuestionIndex);
     } catch (error) {
       console.error('Error giving hint:', error);
       setError('Failed to give hint.');
@@ -344,7 +342,7 @@ const Admin = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="font-semibold text-gray-900 text-sm md:text-base">{team.name}</h3>
-                        <p className="text-xs md:text-sm text-gray-600">Question {team.currentQuestion || 1} of 5</p>
+                        <p className="text-xs md:text-sm text-gray-600">Question {(team.currentQuestionIndex || 0) + 1} of 5</p>
                         {team.email && <p className="text-xs text-gray-500">{team.email}</p>}
                       </div>
                       <div className="text-right">
