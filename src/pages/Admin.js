@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -32,77 +32,7 @@ const Admin = () => {
   const [answerRemaining, setAnswerRemaining] = useState(0);
   const unsubscribeRef = useRef(null);
 
-  useEffect(() => {
-    loadScannedTeams();
-  }, []);
-
-  useEffect(() => {
-    if (showQRScanner && !scanner) {
-      setTimeout(() => {
-        initializeScanner();
-      }, 100);
-    } else if (!showQRScanner && scanner) {
-      stopScanner();
-    }
-  }, [showQRScanner, scanner]);
-
-  useEffect(() => {
-    if (selectedTeam) {
-      // Subscribe to the selected team's live updates for timer
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
-      unsubscribeRef.current = listenToTeam(selectedTeam.id, (live) => {
-        setSelectedTeamLive(live);
-      });
-      return () => {
-        if (unsubscribeRef.current) unsubscribeRef.current();
-      };
-    }
-  }, [selectedTeam]);
-
-  useEffect(() => {
-    let interval = null;
-    if (selectedTeamLive?.answerStarted) {
-      const start = selectedTeamLive.answerStartTime?.toDate?.().getTime?.() || 0;
-      if (start > 0) {
-        const compute = () => {
-          const elapsed = Math.floor((Date.now() - start) / 1000);
-          const remaining = Math.max(0, 120 - elapsed);
-          setAnswerRemaining(remaining);
-        };
-        compute();
-        interval = setInterval(compute, 1000);
-      }
-    } else {
-      setAnswerRemaining(0);
-    }
-    return () => interval && clearInterval(interval);
-  }, [selectedTeamLive]);
-
-  const initializeScanner = async () => {
-    try {
-      const html5Qrcode = new Html5Qrcode('qr-reader');
-      setScanner(html5Qrcode);
-      const cameras = await Html5Qrcode.getCameras();
-      if (cameras && cameras.length > 0) {
-        await html5Qrcode.start(
-          { deviceId: cameras[0].id },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          onScanSuccess,
-          onScanFailure
-        );
-        setIsScanning(true);
-      } else {
-        setError('No cameras found. Please check camera permissions.');
-      }
-    } catch (error) {
-      console.error('Error initializing scanner:', error);
-      setError('Failed to initialize camera scanner. Please check camera permissions.');
-    }
-  };
-
-  const stopScanner = async () => {
+  const stopScanner = useCallback( async () => {
     if (scanner && isScanning) {
       try {
         await scanner.stop();
@@ -112,9 +42,28 @@ const Admin = () => {
       }
     }
     setScanner(null);
-  };
+  }, [scanner, isScanning]);
 
-  const onScanSuccess = async (decodedText) => {
+  
+
+  const loadScannedTeams = useCallback(async () => {
+    try {
+      setLoading(true);
+      const teams = await getScannedTeams(user.email);
+      setScannedTeams(teams);
+    } catch (error) {
+      console.error('Error loading scanned teams:', error);
+      setError('Failed to load teams.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user.email]);
+
+  useEffect(() => {
+    loadScannedTeams();
+  }, [loadScannedTeams]);
+
+  const onScanSuccess = useCallback(async (decodedText) => {
     setShowQRScanner(false);
     
     // console.log('Scanned QR code:', decodedText);
@@ -169,24 +118,81 @@ const Admin = () => {
       console.error('Raw QR text:', decodedText);
       setError(`Invalid QR code format. Expected JSON with email field. Error: ${parseError.message}`);
     }
-  };
+  }, [user]);
 
-  const onScanFailure = (error) => {
-    // console.log('QR scan failed:', error);
-  };
-
-  const loadScannedTeams = async () => {
+  const initializeScanner = useCallback(async () => {
     try {
-      setLoading(true);
-      const teams = await getScannedTeams(user.email);
-      setScannedTeams(teams);
+      const html5Qrcode = new Html5Qrcode('qr-reader');
+      setScanner(html5Qrcode);
+      const cameras = await Html5Qrcode.getCameras();
+      if (cameras && cameras.length > 0) {
+        await html5Qrcode.start(
+          { deviceId: cameras[0].id },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          onScanSuccess,
+          (error) => console.error('QR scan failure:', error)
+        );
+        setIsScanning(true);
+      } else {
+        setError('No cameras found. Please check camera permissions.');
+      }
     } catch (error) {
-      console.error('Error loading scanned teams:', error);
-      setError('Failed to load teams.');
-    } finally {
-      setLoading(false);
+      console.error('Error initializing scanner:', error);
+      setError('Failed to initialize camera scanner. Please check camera permissions.');
     }
-  };
+  }, [onScanSuccess]);
+
+  useEffect(() => {
+    if (showQRScanner && !scanner) {
+      setTimeout(() => {
+        initializeScanner();
+      }, 100);
+    } else if (!showQRScanner && scanner) {
+      stopScanner();
+    }
+  }, [showQRScanner, scanner, initializeScanner, stopScanner]);
+
+  useEffect(() => {
+    if (selectedTeam) {
+      // Subscribe to the selected team's live updates for timer
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+      unsubscribeRef.current = listenToTeam(selectedTeam.id, (live) => {
+        setSelectedTeamLive(live);
+      });
+      return () => {
+        if (unsubscribeRef.current) unsubscribeRef.current();
+      };
+    }
+  }, [selectedTeam]);
+
+  useEffect(() => {
+    let interval = null;
+    if (selectedTeamLive?.answerStarted) {
+      const start = selectedTeamLive.answerStartTime?.toDate?.().getTime?.() || 0;
+      if (start > 0) {
+        const compute = () => {
+          const elapsed = Math.floor((Date.now() - start) / 1000);
+          const remaining = Math.max(0, 120 - elapsed);
+          setAnswerRemaining(remaining);
+        };
+        compute();
+        interval = setInterval(compute, 1000);
+      }
+    } else {
+      setAnswerRemaining(0);
+    }
+    return () => interval && clearInterval(interval);
+  }, [selectedTeamLive]);
+
+  
+
+  
+
+  
+
+  
 
   const handleTeamSelect = async (team) => {
     setSelectedTeam(team);
