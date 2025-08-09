@@ -7,7 +7,6 @@ import SuperAdmin from './pages/SuperAdmin';
 import Admin from './pages/Admin';
 import Candidate from './pages/Candidate';
 import NotCandidate from './pages/NotCandidate';
-import Leaderboard from './pages/Leaderboard';
 import Loading from './components/Loading';
 
 const ThemeToggle = () => {
@@ -70,7 +69,6 @@ const AppContent = () => {
               <Navigate to="/not-candidate" replace />
             ) : <Login />
           } />
-          {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
           <Route path="/superadmin" element={<ProtectedRoute allowedRoles={['superadmin']}><SuperAdmin /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
           <Route path="/candidate" element={<ProtectedRoute allowedRoles={['candidate']}><Candidate /></ProtectedRoute>} />
