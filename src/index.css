@@ -1,0 +1,105 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
+}
+
+/***** Dark mode base *****/
+:root.dark body {
+  @apply bg-neutral-800 text-neutral-100; /* lighter page bg in dark for visible shadows */
+}
+:root.dark .card, :root.dark .bg-white { @apply bg-neutral-900 text-neutral-100 shadow-xl shadow-black/40; }
+:root.dark .bg-gray-50 { @apply bg-neutral-900 shadow-lg shadow-black/30; }
+:root.dark .bg-blue-50 { @apply bg-neutral-900 shadow-lg shadow-black/30; }
+:root.dark .text-gray-900 { @apply text-neutral-100; }
+:root.dark .text-gray-700 { @apply text-neutral-200; }
+:root.dark .border-gray-200 { @apply border-neutral-700; }
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Subtle, smooth scrollbar */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #1f2937; /* thumb track in dark */
+}
+
+/* WebKit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+:root.dark ::-webkit-scrollbar-track {
+  background: #1f2937; /* gray-800 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #9ca3af, #6b7280);
+  border-radius: 9999px;
+  border: 2px solid #f3f4f6;
+}
+:root.dark ::-webkit-scrollbar-thumb {
+  border-color: #1f2937;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6b7280, #4b5563);
+}
+
+/* Animation classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Buttons, cards, etc stay as defined below */
+.btn-primary { @apply bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200; }
+.btn-secondary { @apply bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200; }
+.btn-success { @apply bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200; }
+.btn-danger { @apply bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200; }
+
+.card { @apply bg-white rounded-lg shadow-lg p-6; }
+.card-header { @apply border-b border-gray-200 pb-4 mb-4; }
+.card-title { @apply text-lg font-semibold text-gray-900; }
+
+.modal-overlay { @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50; }
+.modal-content { @apply bg-white rounded-lg shadow-xl max-w-md w-full mx-4; }
+.spinner { @apply animate-spin rounded-full h-8 w-8 border-b-2 border-red-600; }
+.progress-bar { @apply w-full bg-gray-200 rounded-full h-2; }
+.progress-fill { @apply bg-red-600 h-2 rounded-full transition-all duration-1000; }
+.status-badge { @apply px-2 py-1 rounded-full text-xs font-semibold; }
+.status-success { @apply bg-green-100 text-green-800; }
+.status-error { @apply bg-red-100 text-red-800; }
+.status-warning { @apply bg-yellow-100 text-yellow-800; }
+.status-info { @apply bg-blue-100 text-blue-800; }
