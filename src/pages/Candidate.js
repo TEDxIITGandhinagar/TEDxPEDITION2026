@@ -177,6 +177,7 @@ const Candidate = () => {
         
         await skipTeamQuestion(team.id, currentQuestionIndex);
         // Team state will update via Firestore listener
+        setRevealedHints([]);
       } catch (error) {
         console.error('Error skipping question:', error);
         setError('Failed to skip question.');
@@ -337,7 +338,7 @@ const Candidate = () => {
 
                         {/* Skip and Hint buttons */}
                         <div className="flex flex-col gap-3 justify-center">
-                          <div className='flex flex-row'>
+                          <div className='flex flex-row justify-between'>
                           <button 
                             onClick={handleGiveHint} 
                             disabled={hintsUsed >= 2}
