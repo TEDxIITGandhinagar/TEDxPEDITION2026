@@ -126,8 +126,27 @@ const Admin = () => {
       setScanner(html5Qrcode);
       const cameras = await Html5Qrcode.getCameras();
       if (cameras && cameras.length > 0) {
+        // Try to find back camera first (for mobile devices)
+        let selectedCamera = cameras[0]; // fallback to first camera
+        
+        // Look for back camera (environment facing)
+        const backCamera = cameras.find(camera => 
+          camera.label && (
+            camera.label.toLowerCase().includes('back') ||
+            camera.label.toLowerCase().includes('rear') ||
+            camera.label.toLowerCase().includes('environment')
+          )
+        );
+        
+        if (backCamera) {
+          selectedCamera = backCamera;
+        } else if (cameras.length > 1) {
+          // If no explicitly labeled back camera, prefer the second camera on mobile
+          selectedCamera = cameras[1];
+        }
+        
         await html5Qrcode.start(
-          { deviceId: cameras[0].id },
+          { deviceId: selectedCamera.id },
           { fps: 10, qrbox: { width: 250, height: 250 } },
           onScanSuccess,
           (error) => console.error('QR scan failure:', error)
