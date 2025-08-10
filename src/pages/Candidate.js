@@ -48,8 +48,8 @@ const Candidate = () => {
         }
         
         // Count hints used for current question (now using question index)
-        const hintsArray = teamData.hintsUsed || [];
-        const currentHints = hintsArray.filter(hintQ => hintQ === currentQuestionIndex).length;
+        const hintsArray = teamData.hintsUsed || {};
+        const currentHints = hintsArray[currentQuestionIndex] || 0;
         setHintsUsed(currentHints);
         setRevealedHints([]);
       } else {
