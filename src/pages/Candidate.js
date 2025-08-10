@@ -8,7 +8,8 @@ import {
   startTeamQuestion,
   listenTeamScanned,
   skipTeamQuestion,
-  giveTeamHint
+  giveTeamHint,
+  getTeamQuestions
 } from '../services/gameService';
 import QRCode from 'qrcode';
 import Progress from '../components/Progress';
@@ -39,6 +40,8 @@ const Candidate = () => {
         
         // Load current question using team ID and current question index
         const currentQuestionIndex = teamData.currentQuestionIndex || 0;
+
+        const questions = getTeamQuestions(teamData.id);
         
         await loadCurrentQuestion(teamData.id, currentQuestionIndex);
         
@@ -54,9 +57,9 @@ const Candidate = () => {
         if(hintsArray[currentQuestionIndex] === 0) {
           setRevealedHints([]);
         }else if(hintsArray[currentQuestionIndex] === 1){
-          setRevealedHints([teamData.questionStatuses[currentQuestionIndex].hint1]);
+          setRevealedHints([questions[currentQuestionIndex]['hint1']]);
         }else if(hintsArray[currentQuestionIndex] === 2){
-          setRevealedHints([teamData.questionStatuses[currentQuestionIndex].hint1, teamData.questionStatuses[currentQuestionIndex].hint2]);
+          setRevealedHints([questions[currentQuestionIndex]['hint1'], questions[currentQuestionIndex]['hint2']]);
         }
       } else {
         setError('Team not found. Please contact the organizers.');
