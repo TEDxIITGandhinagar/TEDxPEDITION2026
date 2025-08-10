@@ -207,7 +207,6 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
     // Fetch questions to get total count
     const questions = await getTeamQuestions(teamId);
     
-    const startTs = data.answerStartTime?.toDate?.() || data.questionStartTime?.toDate?.();
 
     let pointsEarned = 0;
     if (isCorrect) {
@@ -229,7 +228,6 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
       status: isCorrect ? 'correct' : 'incorrect',
       answer: answer,
       pointsEarned: pointsEarned,
-      startTs: startTs,
       completedAt: serverTimestamp()
     };
 
@@ -308,7 +306,6 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
       status: 'skipped',
       answer: 'NA',
       pointsEarned: -50,
-      startTs: serverTimestamp(),
       completedAt: serverTimestamp()
     };
 
