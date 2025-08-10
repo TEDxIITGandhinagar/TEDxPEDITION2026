@@ -28,8 +28,6 @@ const Admin = () => {
   const [scanner, setScanner] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [teamAnswer, setTeamAnswer] = useState('');
-  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
-  const [answerRemaining, setAnswerRemaining] = useState(0);
   const unsubscribeRef = useRef(null);
 
   const stopScanner = useCallback( async () => {
@@ -186,25 +184,6 @@ const Admin = () => {
     }
   }, [selectedTeam]);
 
-  useEffect(() => {
-    let interval = null;
-    if (selectedTeamLive?.answerStarted) {
-      const start = selectedTeamLive.answerStartTime?.toDate?.().getTime?.() || 0;
-      if (start > 0) {
-        const compute = () => {
-          const elapsed = Math.floor((Date.now() - start) / 1000);
-          const remaining = Math.max(0, 120 - elapsed);
-          setAnswerRemaining(remaining);
-        };
-        compute();
-        interval = setInterval(compute, 1000);
-      }
-    } else {
-      setAnswerRemaining(0);
-    }
-    return () => interval && clearInterval(interval);
-  }, [selectedTeamLive]);
-
   
 
   
@@ -216,7 +195,6 @@ const Admin = () => {
   const handleTeamSelect = async (team) => {
     setSelectedTeam(team);
     setTeamAnswer('');
-    setShowCorrectAnswer(false);
     if (team.id && typeof team.currentQuestionIndex === 'number') {
       try {
         const question = await getCurrentQuestion(team.id, team.currentQuestionIndex);
@@ -235,7 +213,6 @@ const Admin = () => {
       setSelectedTeamLive(null);
       setCurrentQuestion(null);
       setTeamAnswer('');
-      setShowCorrectAnswer(false);
       setScannedTeams((prev) => prev.filter((t) => t.id !== teamId));
     } catch (e) {
       await loadScannedTeams();

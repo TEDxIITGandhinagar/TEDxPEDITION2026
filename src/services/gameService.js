@@ -384,7 +384,6 @@ export const giveTeamHint = async (teamId, questionNumber) => {
 
     await updateDoc(teamRef, {
       hintsUsed: updatedHintsUsed,
-      hintGiven: true,
       score: newScore,
       updatedAt: serverTimestamp()
     });
