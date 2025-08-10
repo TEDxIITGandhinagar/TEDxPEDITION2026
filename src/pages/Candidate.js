@@ -51,7 +51,13 @@ const Candidate = () => {
         const hintsArray = teamData.hintsUsed || {};
         const currentHints = hintsArray[currentQuestionIndex] || 0;
         setHintsUsed(currentHints);
-        setRevealedHints([]);
+        if(hintsArray[currentQuestionIndex] === 0) {
+          setRevealedHints([]);
+        }else if(hintsArray[currentQuestionIndex] === 1){
+          setRevealedHints([teamData.questionStatuses[currentQuestionIndex].hint1]);
+        }else if(hintsArray[currentQuestionIndex] === 2){
+          setRevealedHints([teamData.questionStatuses[currentQuestionIndex].hint1, teamData.questionStatuses[currentQuestionIndex].hint2]);
+        }
       } else {
         setError('Team not found. Please contact the organizers.');
       }
