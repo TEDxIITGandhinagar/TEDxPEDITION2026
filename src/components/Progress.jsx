@@ -171,10 +171,8 @@ const Progress = ({ teamId }) => {
               ${question.isCurrent ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}
             `}
             title={`
-              Q${question.questionIndex}: ${question.title}
+              Q${question.questionIndex}
               Status: ${question.status}
-              ${question.pointsEarned !== 0 ? `Points: ${question.pointsEarned}` : ''}
-              ${question.timeElapsed > 0 ? `Time: ${formatTime(question.timeElapsed)}` : ''}
             `}
           >
             <div className="flex flex-col items-center">
@@ -182,13 +180,6 @@ const Progress = ({ teamId }) => {
               <div className="text-xs font-semibold mt-1 text-gray-700">
                 {question.questionIndex}
               </div>
-              {question.pointsEarned !== 0 && (
-                <div className={`text-xs mt-1 ${
-                  question.pointsEarned > 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {question.pointsEarned > 0 ? '+' : ''}{question.pointsEarned}
-                </div>
-              )}
             </div>
             {question.isCurrent && (
               <div className="absolute -top-1 -right-1">

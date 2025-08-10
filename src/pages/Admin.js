@@ -89,7 +89,7 @@ const Admin = () => {
           name: fullTeamData.name || fullTeamData.teamName || `Team ${fullTeamData.id}`,
           email: fullTeamData.email || teamData.email,
           currentQuestionIndex: fullTeamData.currentQuestionIndex || 0,
-          score: fullTeamData.score || 200
+          score: fullTeamData.score || 200,
         };
         
         // console.log('Team data to save:', teamToSave);
@@ -283,23 +283,23 @@ const Admin = () => {
     }
   };
 
-  const renderTimer = () => {
-    if (!selectedTeamLive?.answerStarted) {
-      return (
-        <div className="bg-gray-50 rounded-lg p-3 text-center text-sm text-gray-600 mb-4">
-          Waiting for candidate to start their 2-minute answer...
-        </div>
-      );
-    }
-    return (
-      <div className="text-center mb-4">
-        <div className="text-2xl md:text-3xl font-bold text-red-600 mb-2">{`${Math.floor(answerRemaining / 60)}:${(answerRemaining % 60).toString().padStart(2, '0')}`}</div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-red-600 h-2 rounded-full transition-all duration-1000" style={{ width: `${(answerRemaining / 120) * 100}%` }}></div>
-        </div>
-      </div>
-    );
-  };
+  // const renderTimer = () => {
+  //   if (!selectedTeamLive?.answerStarted) {
+  //     return (
+  //       <div className="bg-gray-50 rounded-lg p-3 text-center text-sm text-gray-600 mb-4">
+  //         Waiting for candidate to start their 2-minute answer...
+  //       </div>
+  //     );
+  //   }
+  //   return (
+  //     <div className="text-center mb-4">
+  //       <div className="text-2xl md:text-3xl font-bold text-red-600 mb-2">{`${Math.floor(answerRemaining / 60)}:${(answerRemaining % 60).toString().padStart(2, '0')}`}</div>
+  //       <div className="w-full bg-gray-200 rounded-full h-2">
+  //         <div className="bg-red-600 h-2 rounded-full transition-all duration-1000" style={{ width: `${(answerRemaining / 120) * 100}%` }}></div>
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   if (loading) {
     return (

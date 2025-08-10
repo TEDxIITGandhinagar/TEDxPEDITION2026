@@ -29,13 +29,6 @@ export const getCurrentQuestion = async (teamId, questionIndex) => {
   }
 };
 
-export const getRandomQuestions = () => {
-  // DEPRECATED: This function is no longer used
-  // Questions are now pre-assigned in the database per team
-  console.warn('getRandomQuestions is deprecated - questions should be pre-assigned in database');
-  return [];
-};
-
 // Auto-initialize team score to 200 once
 async function ensureStartingScore(teamDocId, data) {
   const hasScore = typeof data.score === 'number';
@@ -96,111 +89,6 @@ export const listenToTeam = (teamId, callback) => {
       callback({ id: snapshot.id, ...snapshot.data() });
     }
   });
-};
-
-/**
- * TEAM MEMBER MANAGEMENT FUNCTIONS
- * 
- * The system now supports teams with multiple members (up to 3 per team).
- * Each team has:
- * - email: Primary email (leader's email, kept for backward compatibility)
- * - memberEmails: Array of all team member emails
- * - leaderEmail: Email of the team leader
- * 
- * Database structure example:
- * {
- *   name: "Team Alpha",
- *   email: "leader@example.com",
- *   memberEmails: ["leader@example.com", "member2@example.com", "member3@example.com"],
- *   leaderEmail: "leader@example.com",
- *   score: 200,
- *   currentQuestion: 1,
- *   ...
- * }
- */
-
-// Helper function to create a team with multiple member emails
-export const createTeamWithMembers = async (teamName, memberEmails, leaderEmail = null) => {
-  try {
-    if (!Array.isArray(memberEmails) || memberEmails.length === 0) {
-      throw new Error('memberEmails must be a non-empty array');
-    }
-    
-    // Use leader email as primary email, or first email if no leader specified
-    const primaryEmail = leaderEmail || memberEmails[0];
-    
-    const teamData = {
-      name: teamName,
-      email: primaryEmail, // Keep for backward compatibility
-      memberEmails: memberEmails, // Array of all member emails
-      leaderEmail: primaryEmail,
-      score: 200,
-      currentQuestionIndex: 0, // Index in questions array (0-4)
-      questionStarted: false,
-      answerStarted: false,
-      questionStatuses: {}, // Initialize empty question statuses object
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
-    
-    const teamsRef = collection(db, 'teams');
-    const docRef = await addDoc(teamsRef, teamData);
-    
-    return { id: docRef.id, ...teamData };
-  } catch (error) {
-    console.error('Error creating team with members:', error);
-    throw error;
-  }
-};
-
-// Helper function to check if an email belongs to any team
-export const checkEmailInTeam = async (email) => {
-  try {
-    const teamData = await getTeamData(email);
-    return teamData !== null;
-  } catch (error) {
-    console.error('Error checking email in team:', error);
-    return false;
-  }
-};
-
-// Helper function to add a member to an existing team
-export const addMemberToTeam = async (teamId, newMemberEmail) => {
-  try {
-    // Check if email is already in another team
-    const existingTeam = await getTeamData(newMemberEmail);
-    if (existingTeam && existingTeam.id !== teamId) {
-      throw new Error('Email is already part of another team');
-    }
-    
-    const teamRef = doc(db, 'teams', teamId);
-    const teamSnap = await getDoc(teamRef);
-    
-    if (!teamSnap.exists()) {
-      throw new Error('Team not found');
-    }
-    
-    const teamData = teamSnap.data();
-    const currentMembers = teamData.memberEmails || [teamData.email];
-    
-    // Check if member is already in the team
-    if (currentMembers.includes(newMemberEmail)) {
-      throw new Error('Email is already a member of this team');
-    }
-    
-    // Add new member to the team
-    const updatedMembers = [...currentMembers, newMemberEmail];
-    
-    await updateDoc(teamRef, {
-      memberEmails: updatedMembers,
-      updatedAt: serverTimestamp()
-    });
-    
-    return { id: teamId, ...teamData, memberEmails: updatedMembers };
-  } catch (error) {
-    console.error('Error adding member to team:', error);
-    throw error;
-  }
 };
 
 // Upsert a scanned team document keyed by admin+team to avoid duplicates
@@ -294,10 +182,8 @@ export const startTeamQuestion = async (teamId, questionIndex) => {
     
     await updateDoc(teamRef, {
       questionStarted: true,
-      questionStartTime: serverTimestamp(),
       answerStarted: true,
-      answerStartTime: serverTimestamp(),
-      currentQuestionIndex: questionIndex
+      currentQuestionIndex: questionIndex,
     });
   } catch (error) {
     console.error('Error starting team question:', error);
@@ -305,16 +191,7 @@ export const startTeamQuestion = async (teamId, questionIndex) => {
   }
 };
 
-function computeTimeBasedPoints(elapsedSeconds) {
-  // Points start counting after 60s (video). <=70s => 100, then -10 every +10s, min 50 by 120s
-  if (elapsedSeconds <= 70) return 100;
-  if (elapsedSeconds <= 80) return 90;
-  if (elapsedSeconds <= 90) return 80;
-  if (elapsedSeconds <= 100) return 70;
-  if (elapsedSeconds <= 110) return 60;
-  if (elapsedSeconds <= 120) return 50;
-  return 0;
-}
+
 
 // FIXED: Submit team answer with proper score calculation and immediate next question update
 export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer = '') => {
@@ -331,14 +208,13 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
     const questions = await getTeamQuestions(teamId);
     
     const startTs = data.answerStartTime?.toDate?.() || data.questionStartTime?.toDate?.();
-    const elapsedSeconds = startTs ? Math.floor((Date.now() - startTs.getTime()) / 1000) : 9999;
 
     let pointsEarned = 0;
     if (isCorrect) {
-      pointsEarned = computeTimeBasedPoints(elapsedSeconds);
+      pointsEarned = 100;
     } else {
       // Wrong answer gives 0 additional points
-      pointsEarned = 0;
+      pointsEarned = -50;
     }
 
     // Calculate new score
@@ -353,7 +229,7 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
       status: isCorrect ? 'correct' : 'incorrect',
       answer: answer,
       pointsEarned: pointsEarned,
-      timeElapsed: elapsedSeconds,
+      startTs: startTs,
       completedAt: serverTimestamp()
     };
 
@@ -361,11 +237,6 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
       currentQuestionIndex: nextQuestionIndex,
       questionStarted: false,
       answerStarted: false,
-      answerStartTime: null,
-      questionStartTime: null,
-      lastAnswerCorrect: isCorrect,
-      lastAnswer: answer,
-      lastAnswerTime: serverTimestamp(),
       questionStatuses: questionStatuses,
       score: newScore, // Set absolute score instead of increment
       updatedAt: serverTimestamp()
@@ -429,15 +300,15 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
     const isGameCompleted = nextQuestionIndex >= questions.length;
 
     // Calculate new score (subtract 100 for skipping)
-    const newScore = currentScore - 100;
+    const newScore = currentScore - 50;
 
     // Update question status tracking
     const questionStatuses = data.questionStatuses || {};
     questionStatuses[questionIndex] = {
       status: 'skipped',
-      answer: '',
-      pointsEarned: -100,
-      timeElapsed: 0,
+      answer: 'NA',
+      pointsEarned: -50,
+      startTs: serverTimestamp(),
       completedAt: serverTimestamp()
     };
 
@@ -445,10 +316,6 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
       currentQuestionIndex: nextQuestionIndex,
       questionStarted: false,
       answerStarted: false,
-      answerStartTime: null,
-      questionStartTime: null,
-      lastAnswerCorrect: false,
-      lastAnswerTime: serverTimestamp(),
       questionStatuses: questionStatuses,
       score: newScore, // Set absolute score instead of increment
       updatedAt: serverTimestamp()
@@ -521,7 +388,6 @@ export const giveTeamHint = async (teamId, questionNumber) => {
     await updateDoc(teamRef, {
       hintsUsed: updatedHintsUsed,
       hintGiven: true,
-      hintTime: serverTimestamp(),
       score: newScore,
       updatedAt: serverTimestamp()
     });
@@ -633,9 +499,6 @@ export const getTeamProgress = async (teamId) => {
         hint1: question.hint1 || '',
         hint2: question.hint2 || '',
         status: status ? status.status : (index < currentQuestionIndex ? 'not-attempted' : 'upcoming'),
-        pointsEarned: status?.pointsEarned || 0,
-        timeElapsed: status?.timeElapsed || 0,
-        answer: status?.answer || '',
         completedAt: status?.completedAt || null,
         isCurrent: index === currentQuestionIndex
       });
@@ -671,107 +534,4 @@ export const getProgressStats = (progress) => {
     remaining,
     totalQuestions: progress.length
   };
-};
-
-// Add this temporary debug function to your gameService.js
-export const debugTeamStructure = async (email) => {
-  try {
-    const teamsRef = collection(db, 'teams');
-    
-    
-    
-    
-    
-    // Specific search for the email
-    const qEmail = query(teamsRef, where('email', '==', email));
-    const emailSnapshot = await getDocs(qEmail);
-    
-    // console.log(`=== SEARCH FOR EMAIL: ${email} ===`);
-    if (!emailSnapshot.empty) {
-      emailSnapshot.forEach((doc) => {
-        // console.log('Found team by email:', doc.id, doc.data());
-      });
-    } else {
-      // console.log('No team found with email:', email);
-    }
-    
-  } catch (error) {
-    console.error('Debug error:', error);
-  }
-};
-
-// Call this function in your Admin component after scanning fails
-// debugTeamStructure('just.backup.op@gmail.com');
-
-// Helper function to create questions document for a team
-export const createTeamQuestions = async (teamId, questions) => {
-  try {
-    if (!Array.isArray(questions) || questions.length !== 5) {
-      throw new Error('Questions must be an array of exactly 5 questions');
-    }
-    
-    // Validate each question has required fields
-    for (let i = 0; i < questions.length; i++) {
-      const question = questions[i];
-      if (!question.video_url || !question.location || !question.hint1 || !question.hint2) {
-        throw new Error(`Question ${i + 1} is missing required fields: video_url, location, hint1, hint2`);
-      }
-    }
-    
-    const questionsRef = doc(db, 'questions', teamId);
-    await setDoc(questionsRef, {
-      questions: questions,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    
-    // console.log(`Questions created for team ${teamId}`);
-    return true;
-  } catch (error) {
-    console.error('Error creating team questions:', error);
-    throw error;
-  }
-};
-
-// Example function to create sample questions for testing
-export const createSampleQuestions = (teamId) => {
-  const sampleQuestions = [
-    {
-      title: "Innovation Challenge",
-      video_url: "https://example.com/video1.mp4",
-      location: "Main Auditorium",
-      hint1: "This is the first hint for innovation challenge",
-      hint2: "This is the second hint for innovation challenge"
-    },
-    {
-      title: "Technology Quest",
-      video_url: "https://example.com/video2.mp4", 
-      location: "Computer Lab",
-      hint1: "Technology shapes our future",
-      hint2: "Think about artificial intelligence"
-    },
-    {
-      title: "Design Thinking",
-      video_url: "https://example.com/video3.mp4",
-      location: "Design Studio", 
-      hint1: "Start with empathy",
-      hint2: "Understand user needs first"
-    },
-    {
-      title: "Sustainability Challenge",
-      video_url: "https://example.com/video4.mp4",
-      location: "Green Campus",
-      hint1: "Think about the environment",
-      hint2: "Reduce, reuse, recycle"
-    },
-    {
-      title: "Final Challenge",
-      video_url: "https://example.com/video5.mp4",
-      location: "Grand Hall",
-      hint1: "Combine all your learnings",
-      hint2: "The power of storytelling"
-    }
-  ];
-  
-  return createTeamQuestions(teamId, sampleQuestions);
 };
