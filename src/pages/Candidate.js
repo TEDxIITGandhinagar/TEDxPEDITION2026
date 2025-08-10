@@ -41,7 +41,7 @@ const Candidate = () => {
         // Load current question using team ID and current question index
         const currentQuestionIndex = teamData.currentQuestionIndex || 0;
 
-        const questions = getTeamQuestions(teamData.id);
+        const questions = await getTeamQuestions(teamData.id);
         
         await loadCurrentQuestion(teamData.id, currentQuestionIndex);
         
