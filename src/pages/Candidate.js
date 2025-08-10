@@ -336,7 +336,8 @@ const Candidate = () => {
                         </div>
 
                         {/* Skip and Hint buttons */}
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <div className="flex flex-col gap-3 justify-center">
+                          <div className='flex flex-row'>
                           <button 
                             onClick={handleGiveHint} 
                             disabled={hintsUsed >= 2}
@@ -357,6 +358,8 @@ const Candidate = () => {
                           >
                             <i className="fas fa-forward mr-2"></i>Skip Question (-50 pts)
                           </button>
+                          </div>
+                          <div>
                           {revealedHints.length > 0 && (
                             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
                               <h5 className="font-semibold text-yellow-900 mb-2">Hints:</h5>
@@ -367,6 +370,7 @@ const Candidate = () => {
                               </ul>
                             </div>
                           )}
+                          </div>
 
                         </div>
                       </div>
