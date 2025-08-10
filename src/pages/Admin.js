@@ -385,27 +385,7 @@ const Admin = () => {
               <h2 className="text-lg md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Manage {selectedTeam.name}</h2>
               {currentQuestion ? (
                 <div>
-                  <div className="mb-4 md:mb-6">
-                    <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">Question {selectedTeam.currentQuestion}</h3>
-                    <p className="text-gray-700 mb-4 text-sm md:text-base">{currentQuestion.description}</p>
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-2">Question:</h4>
-                      <p className="text-gray-700 text-sm md:text-base">{currentQuestion.question}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-2">Team's Answer:</h4>
-                      <textarea value={teamAnswer} onChange={(e) => setTeamAnswer(e.target.value)} placeholder="Enter the team's answer here..." className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" />
-                    </div>
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-yellow-900">Correct Answer:</h4>
-                        <button onClick={() => setShowCorrectAnswer(!showCorrectAnswer)} className="text-yellow-700 hover:text-yellow-900 text-sm font-medium">{showCorrectAnswer ? 'Hide Answer' : 'Show Answer'}</button>
-                      </div>
-                      {showCorrectAnswer && <p className="text-yellow-800 font-semibold">{currentQuestion.answer}</p>}
-                      <p className="text-yellow-700 text-xs mt-2">Click "Show Answer" to verify the team's response</p>
-                    </div>
-                    {renderTimer()}
-                  </div>
+                  
 
                   <div className="space-y-2 md:space-y-3">
                     <button onClick={() => handleSubmitAnswer(true)} disabled={!selectedTeamLive?.answerStarted} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
