@@ -180,6 +180,12 @@ const Candidate = () => {
   const handleSkipQuestion = async () => {
     if (!team || !currentQuestion) return;
     
+    // Check if current user is the team leader (registered email)
+    if (user.email !== team.email) {
+      setError('Only the team leader can skip questions. Please ask your team leader to perform this action.');
+      return;
+    }
+    
     if (window.confirm('Are you sure you want to skip this question? You will lose 50 points.')) {
       try {
         const currentQuestionIndex = team.currentQuestionIndex || 0;
@@ -196,6 +202,12 @@ const Candidate = () => {
 
   const handleGiveHint = async () => {
     if (!team || !currentQuestion) return;
+    
+    // Check if current user is the team leader (registered email)
+    if (user.email !== team.email) {
+      setError('Only the team leader can request hints. Please ask your team leader to perform this action.');
+      return;
+    }
     
     const currentQuestionIndex = team.currentQuestionIndex || 0;
     
@@ -405,12 +417,13 @@ const Candidate = () => {
                           <div className='flex flex-row justify-between'>
                           <button 
                             onClick={handleGiveHint} 
-                            disabled={hintsUsed >= 2}
+                            disabled={hintsUsed >= 2 || user.email !== team.email}
                             className={`px-4 py-2 rounded-lg transition duration-200 text-sm ${
-                              hintsUsed >= 2 
+                              hintsUsed >= 2 || user.email !== team.email
                                 ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
                                 : 'bg-yellow-600 text-white hover:bg-yellow-700'
                             }`}
+                            title={user.email !== team.email ? 'Only team leader can request hints' : ''}
                           >
                             <i className="fas fa-lightbulb mr-2"></i>
                             Get Hint ({2 - hintsUsed} left) 
@@ -419,11 +432,31 @@ const Candidate = () => {
                           
                           <button 
                             onClick={handleSkipQuestion}
-                            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200 text-sm"
+                            disabled={user.email !== team.email}
+                            className={`px-4 py-2 rounded-lg transition duration-200 text-sm ${
+                              user.email !== team.email
+                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                : 'bg-red-600 text-white hover:bg-red-700'
+                            }`}
+                            title={user.email !== team.email ? 'Only team leader can skip questions' : ''}
                           >
                             <i className="fas fa-forward mr-2"></i>Skip Question (-50 pts)
                           </button>
                           </div>
+                          
+                          {/* Team leader access notice */}
+                          {user.email !== team.email && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+                              <div className="flex items-start">
+                                <i className="fas fa-info-circle text-amber-600 mr-2 mt-0.5"></i>
+                                <div className="text-amber-800 text-xs">
+                                  <p className="font-semibold mb-1">Team Leader Access Required</p>
+                                  <p>Only the team leader ({team.email}) can request hints or skip questions. Other team members can view questions and discuss answers.</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
                           <div>
                           {revealedHints.length > 0 && (
                             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
@@ -450,6 +483,7 @@ const Candidate = () => {
                         <li>• Use hints if needed (1st hint: -25 pts, 2nd hint: -50 pts)</li>
                         <li>• Tell your answer to the admin or skip if stuck (-50 pts)</li>
                         <li>• Correct answers give +100 points</li>
+                        <li className="font-semibold text-amber-700">• Only team leader can request hints or skip questions</li>
                       </ul>
                     </div>
                   </div>
