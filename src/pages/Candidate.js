@@ -342,7 +342,6 @@ const Candidate = () => {
                       <li>• Do NOT leave until the admin scans your QR code</li>
                       <li>• Your final score will be calculated after scanning</li>
                       <li>• Wait for confirmation that your game is completed</li>
-                      <li>• Current Score: <strong>{team.score || 0} points</strong></li>
                     </ul>
                   </div>
                 </div>

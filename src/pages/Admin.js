@@ -83,6 +83,7 @@ const Admin = () => {
 
       if(fullTeamData.currentQuestionIndex >= 5) {
         updateDoc(doc(db, 'teams', fullTeamData.id), { currentQuestionIndex: fullTeamData.currentQuestionIndex + 1 });
+        return;
       }
       // console.log('Found team data:', fullTeamData);
       
