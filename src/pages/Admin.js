@@ -32,6 +32,7 @@ const Admin = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [teamAnswer, setTeamAnswer] = useState('');
   const unsubscribeRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const stopScanner = useCallback( async () => {
     if (scanner && isScanning) {
@@ -237,33 +238,42 @@ const Admin = () => {
 
   const handleSubmitAnswer = async (isCorrect) => {
     if (!selectedTeam) return;
+    setIsLoading(true);
     try {
       await submitTeamAnswer(selectedTeam.id, selectedTeam.currentQuestionIndex, isCorrect, teamAnswer);
       await finalizeAndRemove(selectedTeam.id);
     } catch (error) {
       console.error('Error submitting answer:', error);
       setError('Failed to submit answer.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSkipQuestion = async () => {
     if (!selectedTeam) return;
+    setIsLoading(true);
     try {
       await skipTeamQuestion(selectedTeam.id, selectedTeam.currentQuestionIndex);
       await finalizeAndRemove(selectedTeam.id);
     } catch (error) {
       console.error('Error skipping question:', error);
       setError('Failed to skip question.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGiveHint = async () => {
     if (!selectedTeam) return;
+    setIsLoading(true);
     try {
       await giveTeamHint(selectedTeam.id, selectedTeam.currentQuestionIndex);
     } catch (error) {
       console.error('Error giving hint:', error);
       setError('Failed to give hint.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -385,16 +395,16 @@ const Admin = () => {
                   
 
                   <div className="space-y-2 md:space-y-3">
-                    <button onClick={() => handleSubmitAnswer(true)} disabled={!selectedTeamLive?.answerStarted} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+                    <button onClick={() => handleSubmitAnswer(true)} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
                       <i className="fas fa-check mr-2"></i>Submit Correct Answer
                     </button>
-                    <button onClick={() => handleSubmitAnswer(false)} disabled={!selectedTeamLive?.answerStarted} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                    <button onClick={() => handleSubmitAnswer(false)} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700'}`}>
                       <i className="fas fa-times mr-2"></i>Submit Wrong Answer
                     </button>
-                    <button onClick={handleGiveHint} disabled={!selectedTeamLive?.answerStarted} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                    <button onClick={handleGiveHint} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
                       <i className="fas fa-lightbulb mr-2"></i>Give Hint
                     </button>
-                    <button onClick={handleSkipQuestion} disabled={!selectedTeamLive?.answerStarted} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gray-600 text-white hover:bg-gray-700'}`}>
+                    <button onClick={handleSkipQuestion} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gray-600 text-white hover:bg-gray-700'}`}>
                       <i className="fas fa-forward mr-2"></i>Skip Question
                     </button>
                   </div>

@@ -106,7 +106,7 @@ export const saveScannedTeam = async (adminEmail, teamData) => {
     
     // console.log('Saving scanned team with validated data:', validatedTeamData);
     
-    const id = `${adminEmail}_${validatedTeamData.id}`;
+    const id = teamData.id;
     const scannedDocRef = doc(db, 'scannedTeams', id);
     
     await setDoc(
@@ -453,11 +453,13 @@ export const getLeaderboard = async () => {
 };
 
 export const listenTeamScanned = (teamId, callback) => {
-  const scannedRef = collection(db, 'scannedTeams');
-  const qRef = query(scannedRef, where('teamId', '==', teamId));
-  return onSnapshot(qRef, (snap) => {
-    callback(!snap.empty);
-  });
+  const scannedRef = doc(db, 'scannedTeams', teamId);
+  const data = getDoc(scannedRef);
+  if (data.exists()) {
+    callback(true);
+  } else {
+    callback(false);
+  }
 };
 
 // Helper function to get team progress with question statuses

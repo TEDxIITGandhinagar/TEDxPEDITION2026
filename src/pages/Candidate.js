@@ -362,7 +362,7 @@ const Candidate = () => {
               <div>
                 <div className="text-center mb-6 md:mb-8">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Welcome, Team {team.name}!</h2>
-                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Xcoins {team.score || 0}</h4>
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Xcoins <span className="text-tedx-red">{team.score || 0}</span></h4>
                   <p className="text-gray-600 mb-4 text-sm md:text-base">Question {(team.currentQuestionIndex || 0) + 1} of 5</p>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-red-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(((team.currentQuestionIndex || 0) + 1) / 5) * 100}%` }}></div>
