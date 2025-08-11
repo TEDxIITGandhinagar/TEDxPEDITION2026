@@ -453,13 +453,12 @@ export const getLeaderboard = async () => {
 };
 
 export const listenTeamScanned = (teamId, callback) => {
-  const scannedRef = doc(db, 'scannedTeams', teamId);
-  const data = getDoc(scannedRef);
-  if (data) {
-    callback(true);
-  } else {
-    callback(false);
-  }
+  const scannedRef = collection(db, 'scannedTeams');
+  const qScanned = query(scannedRef, where('teamId', '==', teamId));
+  
+  return onSnapshot(qScanned, (snapshot) => {
+    callback(!snapshot.empty);
+  });
 };
 
 // Helper function to get team progress with question statuses

@@ -172,7 +172,7 @@ const Candidate = () => {
       
       await startTeamQuestion(team.id, currentQuestionIndex);
       // Question state will sync via Firestore
-      setIsScanned(false);
+      // Note: isScanned state is managed by the listenTeamScanned listener
     } catch (e) {
       console.error('Error starting question:', e);
     }
