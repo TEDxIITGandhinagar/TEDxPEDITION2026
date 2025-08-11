@@ -225,7 +225,7 @@ const Admin = () => {
 
   const finalizeAndRemove = async (teamId) => {
     try {
-      await removeScannedTeam(user.email, teamId);
+      await removeScannedTeam(teamId);
       setSelectedTeam(null);
       setSelectedTeamLive(null);
       setCurrentQuestion(null);

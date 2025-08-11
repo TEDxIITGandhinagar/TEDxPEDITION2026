@@ -131,7 +131,7 @@ export const saveScannedTeam = async (adminEmail, teamData) => {
   }
 };
 
-export const removeScannedTeam = async (adminEmail, teamId) => {
+export const removeScannedTeam = async (teamId) => {
   try {
     const id = teamId;
     await deleteDoc(doc(db, 'scannedTeams', id));

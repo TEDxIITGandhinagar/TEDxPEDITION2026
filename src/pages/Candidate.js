@@ -173,6 +173,8 @@ const Candidate = () => {
     if (!team) return;
     try {
       const currentQuestionIndex = team.currentQuestionIndex || 0;
+
+      
       
       await startTeamQuestion(team.id, currentQuestionIndex);
       // Question state will sync via Firestore
@@ -368,7 +370,7 @@ const Candidate = () => {
               <div>
                 <div className="text-center mb-6 md:mb-8">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Welcome, Team {team.name}!</h2>
-                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Xcoins <span className="text-tedx-red">{team.score || 0}</span></h4>
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><span className="text-tedx-red">X</span>coins <span className="text-tedx-red">{team.score || 0}</span></h4>
                   <p className="text-gray-600 mb-4 text-sm md:text-base">Question {(team.currentQuestionIndex || 0) + 1} of 5</p>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-red-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(((team.currentQuestionIndex || 0) + 1) / 5) * 100}%` }}></div>
@@ -378,8 +380,8 @@ const Candidate = () => {
                 {currentQuestion ? (
                   <div className="text-center">
                     <div className="mb-4 md:mb-6">
-                      <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 md:mb-4">{currentQuestion.title}</h3>
-                      <p className="text-gray-700 mb-4 md:mb-6 text-sm md:text-base">{currentQuestion.description}</p>
+                      {/* <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 md:mb-4">{currentQuestion.title}</h3> */}
+                      {/* <p className="text-gray-700 mb-4 md:mb-6 text-sm md:text-base">{currentQuestion.description}</p> */}
                     </div>
 
                     <div className="bg-gray-50 rounded-lg p-4 md:p-6 mb-4 md:mb-6">
