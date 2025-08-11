@@ -392,7 +392,8 @@ const Admin = () => {
               <h2 className="text-lg md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Manage {selectedTeam.name}</h2>
               {currentQuestion ? (
                 <div>
-                  
+                  <div className="text-sm text-gray-600 mb-2">Current Question:</div>
+                  <div className="font-semibold text-gray-900">{currentQuestion.text}</div>
 
                   <div className="space-y-2 md:space-y-3">
                     <button onClick={() => handleSubmitAnswer(true)} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
