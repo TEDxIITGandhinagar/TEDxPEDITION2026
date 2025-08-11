@@ -4,13 +4,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBQQ4RQZhDqm1lB1TQs8TkOMIPmAWmV7zU",
-    authDomain: "tedx-5d2ce.firebaseapp.com",
-    projectId: "tedx-5d2ce",
-    storageBucket: "tedx-5d2ce.firebasestorage.app",
-    messagingSenderId: "498889009556",
-    appId: "1:498889009556:web:c3cd0067b747d198b54781",
-    measurementId: "G-ZZQD3RZHH8"
+  apiKey: "AIzaSyAMjpRHo3Qal-KtsrmLAB1RJCJXLpmxABI",
+  authDomain: "tedxpedition26.firebaseapp.com",
+  projectId: "tedxpedition26",
+  storageBucket: "tedxpedition26.firebasestorage.app",
+  messagingSenderId: "382120351045",
+  appId: "1:382120351045:web:1221066bdb01ed3c8cda2c",
+  measurementId: "G-36FS92ZF9M"
 };
 
 // Initialize Firebase
