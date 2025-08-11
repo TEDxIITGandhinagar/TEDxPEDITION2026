@@ -14,6 +14,8 @@ import {
 import QRCode from 'qrcode';
 import Progress from '../components/Progress';
 import logo from '../assets/images/TEDx_Logo_Short.png';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 
 const Candidate = () => {
@@ -114,6 +116,24 @@ const Candidate = () => {
   useEffect(() => {
     initializeTeam();
   }, [initializeTeam]);
+
+  useEffect(() => {
+
+    async function call(){
+      if(team?.id){
+      const scanRef = doc(db, 'scannedTeams', team.id);
+      const data = await getDoc(scanRef);
+      if(data.exists()){
+        setIsScanned(true);
+      }else{
+        setIsScanned(false);
+      }
+    }else{
+      return;
+    }
+    }
+    call();
+  }, [team]);
 
   
   useEffect(() => {
@@ -302,9 +322,10 @@ const Candidate = () => {
                 <div className="mb-6">
                   <i className="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
                   <h2 className="text-3xl font-bold text-gray-900 mb-4">Congratulations, Team {team.name}!</h2>
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><span className="text-tedx-red">X</span>coins <span className="text-tedx-red">{team.score || 0}</span></h4>
                   <p className="text-xl text-gray-600 mb-4">You have completed all 5 questions in the TEDxPEDITION!</p>
                   <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
-                    <p className="text-sm">Thank you for participating in the TEDx IIT Gandhinagar orientation TEDxPEDITION!</p>
+                    <p className="text-sm">Thank you for participating in the TEDxIITGandhinagar orientation TEDxPEDITION!</p>
                   </div>
                 </div>
                 
@@ -317,6 +338,7 @@ const Candidate = () => {
                 <div className="mb-6">
                   <i className="fas fa-flag-checkered text-6xl text-green-500 mb-4"></i>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">All Questions Completed!</h2>
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><span className="text-tedx-red">X</span>coins <span className="text-tedx-red">{team.score || 0}</span></h4>
                   <p className="text-lg text-gray-600 mb-6">Congratulations! You have answered all 5 questions.</p>
                   
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">

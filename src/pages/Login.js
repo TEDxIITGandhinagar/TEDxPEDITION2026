@@ -66,7 +66,7 @@ const Login = () => {
 
             <div className="text-center">
               <p className="text-sm text-gray-500">
-                By signing in, you agree to participate in the TEDx challenge
+                By signing in, you agree to participate in the TEDxPEDITION
               </p>
             </div>
           </div>

@@ -104,7 +104,7 @@ const Admin = () => {
           name: fullTeamData.name || fullTeamData.teamName || `Team ${fullTeamData.id}`,
           email: fullTeamData.email || teamData.email,
           currentQuestionIndex: fullTeamData.currentQuestionIndex || 0,
-          score: fullTeamData.score || 200,
+          score: fullTeamData.score,
         };
         
         // console.log('Team data to save:', teamToSave);

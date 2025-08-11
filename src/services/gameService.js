@@ -202,7 +202,7 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
 
     const data = teamSnap.data();
     const currentQuestionIndex = data.currentQuestionIndex || 0;
-    const currentScore = data.score || 200;
+    const currentScore = data.score;
     
     // Fetch questions to get total count
     const questions = await getTeamQuestions(teamId);
@@ -289,7 +289,7 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
     const data = teamSnap.data();
 
     const currentQuestionIndex = data.currentQuestionIndex || 0;
-    const currentScore = data.score || 200;
+    const currentScore = data.score;
     
     // Fetch questions to get total count
     const questions = await getTeamQuestions(teamId);
@@ -365,7 +365,7 @@ export const giveTeamHint = async (teamId, questionNumber) => {
     // Initialize hintsUsed as an object to track hints per question
     const hintsUsed = data.hintsUsed || {};
     const questionHints = hintsUsed[questionNumber] || 0; // Number of hints used for this question
-    const currentScore = data.score || 200;
+    const currentScore = data.score;
 
     // Maximum 2 hints per question
     if (questionHints >= 2) {
@@ -506,7 +506,7 @@ export const getTeamProgress = async (teamId) => {
       currentQuestion: questions[currentQuestionIndex] || questions[0],
       questions,
       totalQuestions,
-      score: teamData.score || 200,
+      score: teamData.score,
       progress
     };
   } catch (error) {
