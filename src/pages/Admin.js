@@ -14,7 +14,7 @@ import {
   listenToTeam
 } from '../services/gameService';
 import logo from '../assets/images/TEDx_Logo_Short.png'
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 const Admin = () => {
@@ -26,6 +26,7 @@ const Admin = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [scanner, setScanner] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -65,6 +66,8 @@ const Admin = () => {
 
   const onScanSuccess = useCallback(async (decodedText) => {
     setShowQRScanner(false);
+    setError(''); // Clear any existing error
+    setSuccessMessage(''); // Clear any existing success message
     
     // console.log('Scanned QR code:', decodedText);
     
@@ -81,8 +84,14 @@ const Admin = () => {
       
       const fullTeamData = await getTeamData(teamData.email);
 
+      // Check if team has completed all 5 questions and is ready for final completion
       if(fullTeamData.currentQuestionIndex >= 5) {
-        await updateDoc(doc(db, 'teams', fullTeamData.id), { currentQuestionIndex: fullTeamData.currentQuestionIndex + 1, gameCompleted: true });
+        await updateDoc(doc(db, 'teams', fullTeamData.id), { 
+          gameCompleted: true,
+          gameCompletedAt: serverTimestamp()
+        });
+        setSuccessMessage(`🎉 Game completed successfully! Team ${fullTeamData.name} has finished all questions.`);
+        setError(''); // Clear any existing errors
         return;
       }
       // console.log('Found team data:', fullTeamData);
@@ -317,6 +326,10 @@ const Admin = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 md:px-4 md:py-3 rounded-md mb-4 md:mb-6 text-sm">{error}</div>
+        )}
+        
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 md:px-4 md:py-3 rounded-md mb-4 md:mb-6 text-sm">{successMessage}</div>
         )}
 
         <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-4 md:mb-8">
