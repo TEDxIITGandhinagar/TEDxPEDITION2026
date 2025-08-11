@@ -459,7 +459,7 @@ const Candidate = () => {
                           
                           <div>
                           {revealedHints.length > 0 && (
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4 overflow-y-auto" style={{ wordWrap: 'break-word' }}>
                               <h5 className="font-semibold text-yellow-900 mb-2">Hints:</h5>
                               <ul className="list-disc pl-5 text-yellow-800">
                                 {revealedHints.map((hint, idx) => (

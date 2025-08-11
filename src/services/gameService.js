@@ -34,7 +34,7 @@ async function ensureStartingScore(teamDocId, data) {
   const hasScore = typeof data.score === 'number';
   if (!hasScore) {
     const ref = doc(db, 'teams', teamDocId);
-    await updateDoc(ref, { score: 200, scoreInitialized: true });
+    await updateDoc(ref, { score: 200 });
     return 200;
   }
   return data.score;
@@ -438,7 +438,7 @@ export const getLeaderboard = async () => {
       const data = snapshot.data();
       // Initialize missing score to 200
       if (typeof data.score !== 'number') {
-        await updateDoc(doc(db, 'teams', snapshot.id), { score: 200, scoreInitialized: true });
+        await updateDoc(doc(db, 'teams', snapshot.id), { score: 200 });
         data.score = 200;
       }
       teams.push({ id: snapshot.id, ...data });
