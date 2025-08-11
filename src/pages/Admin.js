@@ -82,7 +82,7 @@ const Admin = () => {
       const fullTeamData = await getTeamData(teamData.email);
 
       if(fullTeamData.currentQuestionIndex >= 5) {
-        updateDoc(doc(db, 'teams', fullTeamData.id), { currentQuestionIndex: fullTeamData.currentQuestionIndex + 1 });
+        updateDoc(doc(db, 'teams', fullTeamData.id), { currentQuestionIndex: fullTeamData.currentQuestionIndex + 1, gameCompleted: true });
         return;
       }
       // console.log('Found team data:', fullTeamData);
