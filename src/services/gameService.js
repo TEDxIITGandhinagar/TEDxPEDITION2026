@@ -246,9 +246,7 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
       updateData.gameCompletedAt = serverTimestamp();
     }
 
-    await updateDoc(teamRef, updateData);
-
-    // IMPORTANT: Remove the team from scanned teams so they need to be scanned again for the next question
+    // CRITICAL: Remove the team from scanned teams BEFORE updating team data to prevent race condition
     if (!isGameCompleted) {
       try {
         // Remove all scanned entries for this team so admin needs to scan again
@@ -267,6 +265,8 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
         // Continue execution even if cleanup fails
       }
     }
+
+    await updateDoc(teamRef, updateData);
 
     // Return updated team data for immediate UI updates
     return {
@@ -324,9 +324,7 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
       updateData.gameCompletedAt = serverTimestamp();
     }
 
-    await updateDoc(teamRef, updateData);
-
-    // IMPORTANT: Remove the team from scanned teams so they need to be scanned again for the next question
+    // CRITICAL: Remove the team from scanned teams BEFORE updating team data to prevent race condition
     if (!isGameCompleted) {
       // Remove all scanned entries for this team so admin needs to scan again
       const scannedRef = collection(db, 'scannedTeams');
@@ -342,6 +340,8 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
         await Promise.all(deletePromises);
       }
     }
+
+    await updateDoc(teamRef, updateData);
 
     // Return updated team data for immediate UI updates
     return {

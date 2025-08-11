@@ -121,10 +121,6 @@ const Candidate = () => {
       const unsubTeam = listenToTeam(team.id, async (updatedTeam) => {
         // console.log('Team updated:', updatedTeam);
         
-        // Check if question index has changed (question completed)
-        const oldQuestionIndex = team?.currentQuestionIndex || 0;
-        const newQuestionIndex = updatedTeam.currentQuestionIndex || 0;
-        
         setTeam(updatedTeam);
         
         // Load current question using team ID and current question index
@@ -152,10 +148,8 @@ const Candidate = () => {
         const currentHints = hintsUsedObj[currentQuestionIndex] || 0;
         setHintsUsed(currentHints);
         
-        // If question index changed (question was completed), reset scanned status
-        if (newQuestionIndex > oldQuestionIndex) {
-          setIsScanned(false);
-        }
+        // Note: isScanned state is now properly managed by the listenTeamScanned listener
+        // The scanned teams are removed BEFORE the team data is updated to prevent race conditions
       });
 
       const unsubScanned = listenTeamScanned(team.id, (scanned) => {
@@ -420,8 +414,7 @@ const Candidate = () => {
                         <h4 className="text-base md:text-lg font-semibold text-blue-900 mb-4">Current Question</h4>
                         
                         <div className="bg-white rounded-lg p-4 mb-4">
-                          <h5 className="font-semibold text-gray-900 mb-2">Question:</h5>
-                          <p className="text-gray-700 text-sm md:text-base">{currentQuestion.question}</p>
+                          <iframe className="w-full h-48 md:h-64 rounded-lg mb-4" src={currentQuestion.videoUrl} title="Question Video"></iframe>
                           <p className="text-xs text-gray-500 mt-2">Tell your answer to the admin.</p>
                         </div>
 
