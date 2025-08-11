@@ -240,8 +240,8 @@ const Admin = () => {
     if (!selectedTeam) return;
     setIsLoading(true);
     try {
-      await submitTeamAnswer(selectedTeam.id, selectedTeam.currentQuestionIndex, isCorrect, teamAnswer);
       await finalizeAndRemove(selectedTeam.id);
+      await submitTeamAnswer(selectedTeam.id, selectedTeam.currentQuestionIndex, isCorrect, teamAnswer);
     } catch (error) {
       console.error('Error submitting answer:', error);
       setError('Failed to submit answer.');
@@ -254,8 +254,8 @@ const Admin = () => {
     if (!selectedTeam) return;
     setIsLoading(true);
     try {
-      await skipTeamQuestion(selectedTeam.id, selectedTeam.currentQuestionIndex);
       await finalizeAndRemove(selectedTeam.id);
+      await skipTeamQuestion(selectedTeam.id, selectedTeam.currentQuestionIndex);
     } catch (error) {
       console.error('Error skipping question:', error);
       setError('Failed to skip question.');
