@@ -14,6 +14,8 @@ import {
   listenToTeam
 } from '../services/gameService';
 import logo from '../assets/images/TEDx_Logo_Short.png'
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 const Admin = () => {
   const { user, logout } = useAuth();
@@ -78,6 +80,10 @@ const Admin = () => {
       // console.log('Looking up team for email:', teamData.email);
       
       const fullTeamData = await getTeamData(teamData.email);
+
+      if(fullTeamData.currentQuestionIndex >= 5) {
+        updateDoc(doc(db, 'teams', fullTeamData.id), { currentQuestionIndex: fullTeamData.currentQuestionIndex + 1 });
+      }
       // console.log('Found team data:', fullTeamData);
       
       if (fullTeamData) {

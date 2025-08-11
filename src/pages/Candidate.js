@@ -291,6 +291,62 @@ const Candidate = () => {
                 {/* Progress Component */}
                 {/* <Progress teamId={team.id} /> */}
               </div>
+            ) : (team.currentQuestionIndex || 0) >= 5 ? (
+              /* Show completion message with instructions to go to Old PC */
+              <div className="text-center">
+                <div className="mb-6">
+                  <i className="fas fa-flag-checkered text-6xl text-green-500 mb-4"></i>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">All Questions Completed!</h2>
+                  <p className="text-lg text-gray-600 mb-6">Congratulations! You have answered all 5 questions.</p>
+                  
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                    <h3 className="text-xl font-bold text-blue-900 mb-4">
+                      <i className="fas fa-desktop mr-2"></i>
+                      Final Step: Go to Old PC
+                    </h3>
+                    <p className="text-blue-800 mb-4">
+                      To complete the game and finalize your score, please:
+                    </p>
+                    <div className="text-left">
+                      <ol className="list-decimal list-inside text-blue-800 space-y-2 mb-4">
+                        <li>Go to the <strong>Old PC</strong> location</li>
+                        <li>Find the admin at the Old PC</li>
+                        <li>Show them your QR code below</li>
+                        <li>They will scan it to complete your game</li>
+                      </ol>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Show this QR code to the admin at Old PC:</h4>
+                    <div className="bg-white p-4 rounded-lg inline-block">
+                      {qrCodeUrl ? (
+                        <img src={qrCodeUrl} alt="Team QR Code" className="w-40 h-40 md:w-56 md:h-56" />
+                      ) : (
+                        <div className="w-40 h-40 md:w-56 md:h-56 bg-gray-200 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm font-semibold text-red-600 mt-4">📍 Location: Old PC</p>
+                    <p className="text-xs text-gray-500 mt-2">Team: {team.name} | Email: {team.email}</p>
+                    <p className="text-xs text-gray-400 mt-1">Show this QR code to complete your game</p>
+                  </div>
+                  
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-yellow-900 mb-2">
+                      <i className="fas fa-exclamation-triangle mr-2"></i>
+                      Important Instructions:
+                    </h4>
+                    <ul className="text-yellow-800 text-sm space-y-1 text-left">
+                      <li>• Do NOT leave until the admin scans your QR code</li>
+                      <li>• Your final score will be calculated after scanning</li>
+                      <li>• Wait for confirmation that your game is completed</li>
+                      <li>• Current Score: <strong>{team.score || 0} points</strong></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div>
                 <div className="text-center mb-6 md:mb-8">

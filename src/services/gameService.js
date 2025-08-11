@@ -220,7 +220,7 @@ export const submitTeamAnswer = async (teamId, questionIndex, isCorrect, answer 
     const newScore = currentScore + pointsEarned;
 
     const nextQuestionIndex = currentQuestionIndex + 1;
-    const isGameCompleted = nextQuestionIndex >= questions.length;
+    const isGameCompleted = nextQuestionIndex > questions.length;
 
     // Update question status tracking
     const questionStatuses = data.questionStatuses || {};
@@ -295,7 +295,7 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
     const questions = await getTeamQuestions(teamId);
     
     const nextQuestionIndex = currentQuestionIndex + 1;
-    const isGameCompleted = nextQuestionIndex >= questions.length;
+    const isGameCompleted = nextQuestionIndex > questions.length;
 
     // Calculate new score (subtract 100 for skipping)
     const newScore = currentScore - 50;
