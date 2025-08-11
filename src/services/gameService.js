@@ -455,7 +455,7 @@ export const getLeaderboard = async () => {
 export const listenTeamScanned = (teamId, callback) => {
   const scannedRef = doc(db, 'scannedTeams', teamId);
   const data = getDoc(scannedRef);
-  if (data.exists()) {
+  if (data) {
     callback(true);
   } else {
     callback(false);
