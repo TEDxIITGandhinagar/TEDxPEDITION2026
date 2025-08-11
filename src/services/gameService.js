@@ -297,7 +297,7 @@ export const skipTeamQuestion = async (teamId, questionIndex) => {
     const nextQuestionIndex = currentQuestionIndex + 1;
     const isGameCompleted = nextQuestionIndex > questions.length;
 
-    // Calculate new score (subtract 100 for skipping)
+    // Calculate new score (subtract 50 for skipping)
     const newScore = currentScore - 50;
 
     // Update question status tracking

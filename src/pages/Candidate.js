@@ -120,6 +120,11 @@ const Candidate = () => {
     if (team) {
       const unsubTeam = listenToTeam(team.id, async (updatedTeam) => {
         // console.log('Team updated:', updatedTeam);
+        
+        // Check if question index has changed (question completed)
+        const oldQuestionIndex = team?.currentQuestionIndex || 0;
+        const newQuestionIndex = updatedTeam.currentQuestionIndex || 0;
+        
         setTeam(updatedTeam);
         
         // Load current question using team ID and current question index
@@ -146,6 +151,11 @@ const Candidate = () => {
         const hintsUsedObj = updatedTeam.hintsUsed || {};
         const currentHints = hintsUsedObj[currentQuestionIndex] || 0;
         setHintsUsed(currentHints);
+        
+        // If question index changed (question was completed), reset scanned status
+        if (newQuestionIndex > oldQuestionIndex) {
+          setIsScanned(false);
+        }
       });
 
       const unsubScanned = listenTeamScanned(team.id, (scanned) => {
