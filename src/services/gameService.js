@@ -465,7 +465,14 @@ export const getLeaderboard = async () => {
     }
     
     // Sort by score desc
-    teams.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    teams.sort((a, b) => {
+      const scoreDiff = (b.score ?? 0) - (a.score ?? 0);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      const dateA = a.updatedAt?.toMillis?.() ?? 0;
+      const dateB = b.updatedAt?.toMillis?.() ?? 0;
+      return dateB - dateA;
+    });
     return teams;
   } catch (error) {
     console.error('Error getting leaderboard:', error);

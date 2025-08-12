@@ -7,6 +7,8 @@ import {
   getAdminsList
 } from '../services/gameService';
 import logo from '../assets/images/TEDx_Logo_Short.png';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 const SuperAdmin = () => {
   const { user, logout } = useAuth();
@@ -17,6 +19,7 @@ const SuperAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     initializeSuperAdmin();
@@ -40,6 +43,23 @@ const SuperAdmin = () => {
       setLoading(false);
     }
   };
+
+   const totalComplete = async () => {
+    const teams = collection(db, 'teams');
+    const teamsdata = await getDocs(teams);
+    let count = 0;
+    for (const team of teamsdata.docs) {
+      const teamData = team.data();
+      if (teamData.gameCompleted) {
+        count++;
+      }
+    }
+    setCount(count);
+  }
+
+  useEffect(() => {
+    totalComplete();
+  }, []);
 
   const handleAddAdmin = async (e) => {
     e.preventDefault();
@@ -179,6 +199,9 @@ const SuperAdmin = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Leaderboard
             </h2>
+            <h4>
+              totalComplete {count}
+            </h4>
             
             {leaderboard.length === 0 ? (
               <div className="text-center py-8">
@@ -203,7 +226,7 @@ const SuperAdmin = () => {
                       <div>
                         <h3 className="font-semibold text-gray-900">Team {team.name}</h3>
                         <p className="text-sm text-gray-600">
-                          Question {team.currentQuestion || 0} of 5
+                          Question {team.currentQuestionIndex+1 || 0} of 5
                         </p>
                       </div>
                     </div>
