@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -11,7 +11,6 @@ import {
   getTeamData,
   saveScannedTeam,
   removeScannedTeam,
-  listenToTeam
 } from '../services/gameService';
 import logo from '../assets/images/TEDx_Logo_Short.png'
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -31,7 +30,7 @@ const Admin = () => {
   const [scanner, setScanner] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [teamAnswer, setTeamAnswer] = useState('');
-  const unsubscribeRef = useRef(null);
+  // const unsubscribeRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const stopScanner = useCallback( async () => {
@@ -61,9 +60,11 @@ const Admin = () => {
     }
   }, [user.email]);
 
+  // Only load once on mount, not on every change
   useEffect(() => {
     loadScannedTeams();
-  }, [loadScannedTeams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Remove loadScannedTeams dependency to prevent re-runs
 
   const onScanSuccess = useCallback(async (decodedText) => {
     setShowQRScanner(false);
@@ -186,20 +187,21 @@ const Admin = () => {
     }
   }, [showQRScanner, scanner, initializeScanner, stopScanner]);
 
-  useEffect(() => {
-    if (selectedTeam) {
-      // Subscribe to the selected team's live updates for timer
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
-      unsubscribeRef.current = listenToTeam(selectedTeam.id, (live) => {
-        setSelectedTeamLive(live);
-      });
-      return () => {
-        if (unsubscribeRef.current) unsubscribeRef.current();
-      };
-    }
-  }, [selectedTeam]);
+  // Remove continuous listener - only fetch team data when needed
+  // useEffect(() => {
+  //   if (selectedTeam) {
+  //     // Subscribe to the selected team's live updates for timer
+  //     if (unsubscribeRef.current) {
+  //       unsubscribeRef.current();
+  //     }
+  //     unsubscribeRef.current = listenToTeam(selectedTeam.id, (live) => {
+  //       setSelectedTeamLive(live);
+  //     });
+  //     return () => {
+  //       if (unsubscribeRef.current) unsubscribeRef.current();
+  //     };
+  //   }
+  // }, [selectedTeam]);
 
   
 
@@ -214,8 +216,13 @@ const Admin = () => {
     setTeamAnswer('');
     if (team.id && typeof team.currentQuestionIndex === 'number') {
       try {
+        // Only fetch question data once when team is selected
         const question = await getCurrentQuestion(team.id, team.currentQuestionIndex);
         setCurrentQuestion(question);
+        
+        // Get team data once instead of continuous listening
+        const teamData = await getTeamData(team.email);
+        setSelectedTeamLive(teamData);
       } catch (error) {
         console.error('Error loading question:', error);
         setError('Failed to load question.');
@@ -230,9 +237,12 @@ const Admin = () => {
       setSelectedTeamLive(null);
       setCurrentQuestion(null);
       setTeamAnswer('');
+      // Update state directly instead of re-reading from database
       setScannedTeams((prev) => prev.filter((t) => t.id !== teamId));
     } catch (e) {
-      await loadScannedTeams();
+      console.error('Error removing team:', e);
+      setError('Failed to remove team from queue');
+      // Only reload if absolutely necessary
     }
   };
 
@@ -396,17 +406,21 @@ const Admin = () => {
                   <div className="font-semibold text-gray-900">{currentQuestion.text}</div>
 
                   <div className="space-y-2 md:space-y-3">
-                    <button onClick={() => handleSubmitAnswer(true)} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
-                      <i className="fas fa-check mr-2"></i>Submit Correct Answer
+                    <button onClick={() => handleSubmitAnswer(true)} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${(!selectedTeamLive?.answerStarted || isLoading) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+                      {isLoading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-check mr-2"></i>}
+                      Submit Correct Answer
                     </button>
-                    <button onClick={() => handleSubmitAnswer(false)} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700'}`}>
-                      <i className="fas fa-times mr-2"></i>Submit Wrong Answer
+                    <button onClick={() => handleSubmitAnswer(false)} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${(!selectedTeamLive?.answerStarted || isLoading) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                      {isLoading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-times mr-2"></i>}
+                      Submit Wrong Answer
                     </button>
-                    <button onClick={handleGiveHint} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-                      <i className="fas fa-lightbulb mr-2"></i>Give Hint
+                    <button onClick={handleGiveHint} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${(!selectedTeamLive?.answerStarted || isLoading) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                      {isLoading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-lightbulb mr-2"></i>}
+                      Give Hint
                     </button>
-                    <button onClick={handleSkipQuestion} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${!selectedTeamLive?.answerStarted ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gray-600 text-white hover:bg-gray-700'}`}>
-                      <i className="fas fa-forward mr-2"></i>Skip Question
+                    <button onClick={handleSkipQuestion} disabled={!selectedTeamLive?.answerStarted || isLoading} className={`w-full px-3 py-2 md:px-4 md:py-3 rounded-lg transition duration-200 text-sm ${(!selectedTeamLive?.answerStarted || isLoading) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gray-600 text-white hover:bg-gray-700'}`}>
+                      {isLoading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-forward mr-2"></i>}
+                      Skip Question
                     </button>
                   </div>
                 </div>

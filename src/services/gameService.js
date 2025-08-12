@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, limit } from 'firebase/firestore';
 
 // Fetch questions from database based on team ID
 export const getTeamQuestions = async (teamId) => {
@@ -30,15 +30,6 @@ export const getCurrentQuestion = async (teamId, questionIndex) => {
 };
 
 // Auto-initialize team score to 200 once
-async function ensureStartingScore(teamDocId, data) {
-  const hasScore = typeof data.score === 'number';
-  if (!hasScore) {
-    const ref = doc(db, 'teams', teamDocId);
-    await updateDoc(ref, { score: 200 });
-    return 200;
-  }
-  return data.score;
-}
 
 export const getTeamData = async (email) => {
   try {
@@ -51,7 +42,7 @@ export const getTeamData = async (email) => {
     if (!emailSnapshot.empty) {
       const teamDoc = emailSnapshot.docs[0];
       const data = teamDoc.data();
-      const score = await ensureStartingScore(teamDoc.id, data);
+      const score = data.score;
       
       // Ensure memberEmails array exists for backward compatibility
       if (!data.memberEmails) {
@@ -70,7 +61,7 @@ export const getTeamData = async (email) => {
     if (!arraySnapshot.empty) {
       const teamDoc = arraySnapshot.docs[0];
       const data = teamDoc.data();
-      const score = await ensureStartingScore(teamDoc.id, data);
+      const score = data.score;
       return { id: teamDoc.id, ...data, score };
     }
     
@@ -144,20 +135,39 @@ export const removeScannedTeam = async (teamId) => {
 export const getScannedTeams = async (adminEmail) => {
   try {
     const scannedRef = collection(db, 'scannedTeams');
-    const q = query(scannedRef, where('adminEmail', '==', adminEmail));
+    const q = query(
+      scannedRef, 
+      where('adminEmail', '==', adminEmail),
+      limit(20) // Limit to reasonable number to prevent excessive reads
+    );
     const querySnapshot = await getDocs(q);
 
     const uniqueByTeam = new Map();
+    // Batch the team reads to reduce individual calls
+    const teamPromises = [];
+    const teamIds = [];
+    
     for (const scannedSnapshot of querySnapshot.docs) {
       const data = scannedSnapshot.data();
-      const teamRef = doc(db, 'teams', data.teamId);
-      const teamSnapshot = await getDoc(teamRef);
+      if (!uniqueByTeam.has(data.teamId)) {
+        teamIds.push(data.teamId);
+        const teamRef = doc(db, 'teams', data.teamId);
+        teamPromises.push(getDoc(teamRef));
+      }
+    }
+    
+    // Execute all team reads in parallel instead of sequential
+    const teamSnapshots = await Promise.all(teamPromises);
+    
+    for (let i = 0; i < teamSnapshots.length; i++) {
+      const teamSnapshot = teamSnapshots[i];
       if (teamSnapshot.exists()) {
         const teamData = teamSnapshot.data();
-        const score = await ensureStartingScore(teamSnapshot.id, teamData);
+        const score = teamData.score;
         uniqueByTeam.set(teamSnapshot.id, { id: teamSnapshot.id, ...teamData, score });
       }
     }
+    
     return Array.from(uniqueByTeam.values());
   } catch (error) {
     console.error('Error getting scanned teams:', error);
@@ -431,18 +441,29 @@ export const getAdminsList = async () => {
 export const getLeaderboard = async () => {
   try {
     const teamsRef = collection(db, 'teams');
-    const querySnapshot = await getDocs(teamsRef);
+    const q = query(teamsRef, limit(50)); // Add reasonable limit for leaderboard
+    const querySnapshot = await getDocs(q);
 
     const teams = [];
+    const updatePromises = [];
+    
     for (const snapshot of querySnapshot.docs) {
       const data = snapshot.data();
-      // Initialize missing score to 200
+      
+      // Batch score initialization instead of individual updates
       if (typeof data.score !== 'number') {
-        await updateDoc(doc(db, 'teams', snapshot.id), { score: 200 });
+        updatePromises.push(updateDoc(doc(db, 'teams', snapshot.id), { score: 200 }));
         data.score = 200;
       }
+      
       teams.push({ id: snapshot.id, ...data });
     }
+    
+    // Execute all score initializations in parallel
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
+    }
+    
     // Sort by score desc
     teams.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
     return teams;
@@ -452,12 +473,20 @@ export const getLeaderboard = async () => {
   }
 };
 
+// Optimize listenTeamScanned to use more efficient queries with limits
 export const listenTeamScanned = (teamId, callback) => {
   const scannedRef = collection(db, 'scannedTeams');
-  const qScanned = query(scannedRef, where('teamId', '==', teamId));
+  const qScanned = query(
+    scannedRef, 
+    where('teamId', '==', teamId),
+    limit(1) // Only need to know if exists, not get all data
+  );
   
   return onSnapshot(qScanned, (snapshot) => {
     callback(!snapshot.empty);
+  }, {
+    // Prefer cache when available to reduce reads
+    includeMetadataChanges: false
   });
 };
 
