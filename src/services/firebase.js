@@ -4,18 +4,17 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAMjpRHo3Qal-KtsrmLAB1RJCJXLpmxABI",
-  authDomain: "tedxpedition26.firebaseapp.com",
-  projectId: "tedxpedition26",
-  storageBucket: "tedxpedition26.firebasestorage.app",
-  messagingSenderId: "382120351045",
-  appId: "1:382120351045:web:1221066bdb01ed3c8cda2c",
-  measurementId: "G-36FS92ZF9M"
+  apiKey: process.env.REACT_APP_apiKey,
+  authDomain: process.env.REACT_APP_authDomain,
+  projectId: process.env.REACT_APP_projectId,
+  storageBucket: process.env.REACT_APP_storageBucket,
+  messagingSenderId: process.env.REACT_APP_messagingSenderId,
+  appId: process.env.REACT_APP_appId,
+  measurementId: process.env.REACT_APP_measurementId
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
 export const db = getFirestore(app);
